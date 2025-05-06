@@ -284,19 +284,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         city: checkoutData.city,
         postalCode: checkoutData.postalCode,
         paymentMethod: checkoutData.paymentMethod,
-        total,
+        total: total.toString(), // Convert number to string for database compatibility
         freeShipping,
         promoApplied: promotionResult.promoApplied,
       };
       
       // Prepare order items
       const orderItems = promotionResult.items.map(item => {
-        const isFree = item.isFree && item.freeCount ? item.freeCount > 0 : false;
+        const isFree = (item as any).isFree && (item as any).freeCount ? (item as any).freeCount > 0 : false;
         return {
           productId: item.productId,
           quantity: item.quantity,
           size: item.size,
-          price: item.price,
+          price: item.price.toString(), // Convert to string for database compatibility
           isFree,
         };
       });

@@ -9,6 +9,19 @@ import { useCart } from "@/context/CartContext";
 import { ArrowLeft, Check, Heart, Truck, RefreshCw } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 
+// Define product interface for stronger typing
+interface Product {
+  id: number;
+  name: string;
+  slug: string;
+  imageUrl: string;
+  price: string | number;
+  oldPrice?: string | number | null;
+  description: string;
+  category: string | { name: string; id: number; slug: string; };
+  sizes: string[];
+}
+
 export default function ProductDetailPage() {
   const [, params] = useRoute("/product/:slug");
   const slug = params?.slug;
@@ -20,13 +33,13 @@ export default function ProductDetailPage() {
   const { addToCart } = useCart();
 
   // Fetch product details
-  const { data: product, isLoading: isLoadingProduct } = useQuery<any>({
+  const { data: product, isLoading: isLoadingProduct } = useQuery<Product>({
     queryKey: [`/api/products/${slug}`],
     enabled: !!slug,
   });
 
   // Fetch related products
-  const { data: relatedProducts, isLoading: isLoadingRelated } = useQuery<any[]>({
+  const { data: relatedProducts = [], isLoading: isLoadingRelated } = useQuery<Product[]>({
     queryKey: ['/api/products', { category: product?.category }],
     enabled: !!product?.category,
   });
@@ -41,6 +54,10 @@ export default function ProductDetailPage() {
   const handleAddToCart = () => {
     if (!product || !selectedSize) return;
     
+    const categoryValue = typeof product.category === 'object' 
+      ? product.category.name 
+      : product.category;
+    
     addToCart({
       productId: product.id,
       quantity,
@@ -48,7 +65,7 @@ export default function ProductDetailPage() {
       price: Number(product.price),
       name: product.name,
       imageUrl: product.imageUrl,
-      category: product.category
+      category: categoryValue
     });
   };
 
@@ -256,9 +273,9 @@ export default function ProductDetailPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {relatedProducts
-                  .filter((p: any) => p.id !== product.id)
+                  .filter((p: Product) => p.id !== product.id)
                   .slice(0, 4)
-                  .map((relatedProduct: any) => (
+                  .map((relatedProduct: Product) => (
                     <ProductCard key={relatedProduct.id} product={relatedProduct} />
                   ))}
               </div>
