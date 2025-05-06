@@ -14,7 +14,7 @@ interface ProductQuickViewProps {
     imageUrl: string;
     price: string | number;
     oldPrice?: string | number | null;
-    category: string;
+    category: string | { name: string; id: number; slug: string; };
     sizes: string[];
     description?: string;
   };
@@ -28,6 +28,10 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
   const { addToCart } = useCart();
 
   const handleAddToCart = () => {
+    const categoryValue = typeof product.category === 'object' 
+      ? product.category.name 
+      : product.category;
+      
     addToCart({
       productId: product.id,
       quantity,
@@ -35,7 +39,7 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
       price: Number(product.price),
       name: product.name,
       imageUrl: product.imageUrl,
-      category: product.category
+      category: categoryValue
     });
     onClose();
   };

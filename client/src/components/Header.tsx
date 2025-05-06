@@ -67,20 +67,24 @@ export default function Header({ toggleCart }: HeaderProps) {
 
         {/* Right icons */}
         <div className="flex items-center space-x-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="hover:text-neutral-200 transition duration-300 text-white"
-          >
-            <Search className="h-5 w-5" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="hover:text-neutral-200 transition duration-300 text-white"
-          >
-            <User className="h-5 w-5" />
-          </Button>
+          <Link href="/products">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="hover:text-neutral-200 transition duration-300 text-white"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
+          </Link>
+          <Link href="/admin">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="hover:text-neutral-200 transition duration-300 text-white"
+            >
+              <User className="h-5 w-5" />
+            </Button>
+          </Link>
           <Button
             variant="ghost"
             size="icon"
