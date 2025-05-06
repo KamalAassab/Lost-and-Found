@@ -203,7 +203,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Set user session
-      req.session.user = {
+      (req.session as any).user = {
         id: user.id,
         username: user.username,
         isAdmin: user.isAdmin,
@@ -230,13 +230,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get(`${apiPrefix}/admin/check`, (req: any, res) => {
-    if (req.session.user && req.session.user.isAdmin) {
+    if ((req.session as any).user && (req.session as any).user.isAdmin) {
       return res.json({
         authenticated: true,
         user: {
-          id: req.session.user.id,
-          username: req.session.user.username,
-          isAdmin: req.session.user.isAdmin,
+          id: (req.session as any).user.id,
+          username: (req.session as any).user.username,
+          isAdmin: (req.session as any).user.isAdmin,
         },
       });
     }

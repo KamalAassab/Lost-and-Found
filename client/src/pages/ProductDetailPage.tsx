@@ -20,13 +20,13 @@ export default function ProductDetailPage() {
   const { addToCart } = useCart();
 
   // Fetch product details
-  const { data: product, isLoading: isLoadingProduct } = useQuery({
+  const { data: product, isLoading: isLoadingProduct } = useQuery<any>({
     queryKey: [`/api/products/${slug}`],
     enabled: !!slug,
   });
 
   // Fetch related products
-  const { data: relatedProducts, isLoading: isLoadingRelated } = useQuery({
+  const { data: relatedProducts, isLoading: isLoadingRelated } = useQuery<any[]>({
     queryKey: ['/api/products', { category: product?.category }],
     enabled: !!product?.category,
   });
@@ -114,7 +114,7 @@ export default function ProductDetailPage() {
           </button>
           <div className="flex items-center text-sm text-gray-500">
             <span className="mx-2">/</span>
-            <span className="capitalize">{product.category}</span>
+            <span className="capitalize">{typeof product.category === 'object' ? (product.category?.name || '') : product.category}</span>
             <span className="mx-2">/</span>
             <span className="text-gray-700 font-medium">{product.name}</span>
           </div>

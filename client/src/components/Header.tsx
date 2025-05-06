@@ -33,45 +33,35 @@ export default function Header({ toggleCart }: HeaderProps) {
       {/* Navigation bar */}
       <nav className="container mx-auto px-4 py-4 flex flex-wrap items-center justify-between">
         {/* Logo */}
-        <Link href="/">
-          <a className="text-2xl md:text-3xl font-bold font-montserrat tracking-wider">
-            <ShopLogo />
-          </a>
+        <Link href="/" className="text-2xl md:text-3xl font-bold font-montserrat tracking-wider">
+          <ShopLogo />
         </Link>
 
         {/* Menu */}
         <div className="hidden md:flex space-x-8 text-sm font-medium">
-          <Link href="/">
-            <a className={cn(
-              "hover:text-neutral-200 transition duration-300", 
-              isActive('/') && "text-neutral-200 font-bold"
-            )}>
-              ACCUEIL
-            </a>
+          <Link href="/" className={cn(
+            "hover:text-neutral-200 transition duration-300", 
+            isActive('/') && "text-neutral-200 font-bold"
+          )}>
+            ACCUEIL
           </Link>
-          <Link href="/products/hoodie">
-            <a className={cn(
-              "hover:text-neutral-200 transition duration-300",
-              isActive('/products/hoodie') && "text-neutral-200 font-bold"
-            )}>
-              HOODIES
-            </a>
+          <Link href="/products/hoodie" className={cn(
+            "hover:text-neutral-200 transition duration-300",
+            isActive('/products/hoodie') && "text-neutral-200 font-bold"
+          )}>
+            HOODIES
           </Link>
-          <Link href="/products/tshirt">
-            <a className={cn(
-              "hover:text-neutral-200 transition duration-300",
-              isActive('/products/tshirt') && "text-neutral-200 font-bold"
-            )}>
-              T-SHIRTS
-            </a>
+          <Link href="/products/tshirt" className={cn(
+            "hover:text-neutral-200 transition duration-300",
+            isActive('/products/tshirt') && "text-neutral-200 font-bold"
+          )}>
+            T-SHIRTS
           </Link>
-          <Link href="/products">
-            <a className={cn(
-              "hover:text-neutral-200 transition duration-300",
-              isActive('/products') && !isActive('/products/hoodie') && !isActive('/products/tshirt') && "text-neutral-200 font-bold"
-            )}>
-              PROMOTIONS
-            </a>
+          <Link href="/products" className={cn(
+            "hover:text-neutral-200 transition duration-300",
+            isActive('/products') && !isActive('/products/hoodie') && !isActive('/products/tshirt') && "text-neutral-200 font-bold"
+          )}>
+            PROMOTIONS
           </Link>
         </div>
 
@@ -118,17 +108,17 @@ export default function Header({ toggleCart }: HeaderProps) {
       {/* Mobile menu (hidden by default) */}
       {mobileMenuOpen && (
         <div className="md:hidden px-4 py-2 pb-4 bg-primary border-t border-gray-800">
-          <Link href="/">
-            <a className="block py-2 border-b border-neutral-700">ACCUEIL</a>
+          <Link href="/" className="block py-2 border-b border-neutral-700">
+            ACCUEIL
           </Link>
-          <Link href="/products/hoodie">
-            <a className="block py-2 border-b border-neutral-700">HOODIES</a>
+          <Link href="/products/hoodie" className="block py-2 border-b border-neutral-700">
+            HOODIES
           </Link>
-          <Link href="/products/tshirt">
-            <a className="block py-2 border-b border-neutral-700">T-SHIRTS</a>
+          <Link href="/products/tshirt" className="block py-2 border-b border-neutral-700">
+            T-SHIRTS
           </Link>
-          <Link href="/products">
-            <a className="block py-2">PROMOTIONS</a>
+          <Link href="/products" className="block py-2">
+            PROMOTIONS
           </Link>
         </div>
       )}
