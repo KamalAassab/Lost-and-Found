@@ -158,10 +158,8 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
             </div>
 
             <div className="mt-4 pt-4 border-t border-neutral-200">
-              <Link href={`/product/${product.slug}`}>
-                <a className="text-primary hover:underline font-medium">
-                  Voir les détails du produit
-                </a>
+              <Link href={`/product/${product.slug}`} className="text-primary hover:underline font-medium">
+                Voir les détails du produit
               </Link>
             </div>
           </div>
