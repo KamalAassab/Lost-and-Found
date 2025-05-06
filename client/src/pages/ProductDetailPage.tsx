@@ -1,0 +1,271 @@
+import React, { useState } from "react";
+import { useRoute, useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import MainLayout from "@/layouts/MainLayout";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatPrice } from "@/lib/utils";
+import { useCart } from "@/context/CartContext";
+import { ArrowLeft, Check, Heart, Truck, RefreshCw } from "lucide-react";
+import ProductCard from "@/components/ProductCard";
+
+export default function ProductDetailPage() {
+  const [, params] = useRoute("/product/:slug");
+  const slug = params?.slug;
+  const [, navigate] = useLocation();
+  
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  
+  const { addToCart } = useCart();
+
+  // Fetch product details
+  const { data: product, isLoading: isLoadingProduct } = useQuery({
+    queryKey: [`/api/products/${slug}`],
+    enabled: !!slug,
+  });
+
+  // Fetch related products
+  const { data: relatedProducts, isLoading: isLoadingRelated } = useQuery({
+    queryKey: ['/api/products', { category: product?.category }],
+    enabled: !!product?.category,
+  });
+
+  // Set page title
+  React.useEffect(() => {
+    if (product) {
+      document.title = `${product.name} | LOST & FOUND`;
+    }
+  }, [product]);
+
+  const handleAddToCart = () => {
+    if (!product || !selectedSize) return;
+    
+    addToCart({
+      productId: product.id,
+      quantity,
+      size: selectedSize,
+      price: Number(product.price),
+      name: product.name,
+      imageUrl: product.imageUrl,
+      category: product.category
+    });
+  };
+
+  const decreaseQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
+  };
+
+  const increaseQuantity = () => {
+    setQuantity(quantity + 1);
+  };
+
+  if (isLoadingProduct) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto py-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <Skeleton className="h-[500px] w-full" />
+            <div>
+              <Skeleton className="h-10 w-3/4 mb-4" />
+              <Skeleton className="h-6 w-1/4 mb-6" />
+              <Skeleton className="h-24 w-full mb-8" />
+              <Skeleton className="h-12 w-full mb-4" />
+              <Skeleton className="h-12 w-full mb-8" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (!product) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto py-12 text-center">
+          <h2 className="text-2xl font-bold mb-4">Produit non trouvé</h2>
+          <p className="mb-6">Le produit que vous recherchez n'existe pas ou a été supprimé.</p>
+          <Button onClick={() => navigate("/products")}>
+            Voir tous les produits
+          </Button>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  const hasDiscount = product.oldPrice != null;
+  const discountPercentage = hasDiscount
+    ? Math.round(((Number(product.oldPrice) - Number(product.price)) / Number(product.oldPrice)) * 100)
+    : 0;
+
+  return (
+    <MainLayout>
+      <div className="container mx-auto py-12">
+        {/* Breadcrumb */}
+        <div className="flex items-center mb-8">
+          <button 
+            onClick={() => navigate("/products")}
+            className="mr-3 p-2 hover:bg-neutral-200 rounded-full"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div className="flex items-center text-sm text-gray-500">
+            <span className="mx-2">/</span>
+            <span className="capitalize">{product.category}</span>
+            <span className="mx-2">/</span>
+            <span className="text-gray-700 font-medium">{product.name}</span>
+          </div>
+        </div>
+
+        {/* Product details */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          {/* Product image */}
+          <div className="relative">
+            {hasDiscount && (
+              <div className="absolute top-4 left-4 bg-accent text-white py-1 px-3 text-sm font-bold z-10">
+                -{discountPercentage}%
+              </div>
+            )}
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              className="w-full h-auto object-cover"
+            />
+          </div>
+
+          {/* Product info */}
+          <div>
+            <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
+            <div className="flex items-center mb-6">
+              <span className="text-accent font-bold text-2xl mr-3">
+                {formatPrice(product.price)}
+              </span>
+              {hasDiscount && (
+                <span className="text-neutral-500 line-through text-lg">
+                  {formatPrice(product.oldPrice!)}
+                </span>
+              )}
+            </div>
+
+            <p className="text-neutral-600 mb-8">
+              {product.description}
+            </p>
+
+            {/* Size selection */}
+            <div className="mb-6">
+              <h3 className="font-semibold mb-2">Taille</h3>
+              <div className="flex flex-wrap gap-2">
+                {product.sizes.map((size: string) => (
+                  <button
+                    key={size}
+                    className={`border px-4 py-2 text-sm ${
+                      selectedSize === size
+                        ? "border-primary bg-primary text-white"
+                        : "border-neutral-300 hover:border-primary"
+                    }`}
+                    onClick={() => setSelectedSize(size)}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+              {!selectedSize && (
+                <p className="text-red-500 text-sm mt-2">
+                  Veuillez sélectionner une taille
+                </p>
+              )}
+            </div>
+
+            {/* Quantity selection */}
+            <div className="mb-8">
+              <h3 className="font-semibold mb-2">Quantité</h3>
+              <div className="flex items-center border border-neutral-300 w-max">
+                <button
+                  className="px-4 py-2 text-sm hover:bg-neutral-100"
+                  onClick={decreaseQuantity}
+                >
+                  -
+                </button>
+                <span className="px-6 py-2 text-sm border-l border-r border-neutral-300">
+                  {quantity}
+                </span>
+                <button
+                  className="px-4 py-2 text-sm hover:bg-neutral-100"
+                  onClick={increaseQuantity}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Add to cart and wishlist */}
+            <div className="flex space-x-4 mb-8">
+              <Button
+                className="flex-grow bg-primary text-white py-3 font-bold uppercase text-sm tracking-wider hover:bg-neutral-800 transition duration-300"
+                onClick={handleAddToCart}
+                disabled={!selectedSize}
+              >
+                Ajouter au panier
+              </Button>
+              <Button
+                variant="outline"
+                className="w-12 h-12 flex items-center justify-center border border-neutral-300 hover:border-primary hover:text-primary transition duration-300"
+              >
+                <Heart className="h-5 w-5" />
+              </Button>
+            </div>
+
+            {/* Product information */}
+            <div className="border-t border-neutral-200 pt-6">
+              <div className="flex items-center mb-3">
+                <Check className="text-green-500 mr-2 h-5 w-5" />
+                <span>En stock - Expédition sous 24h</span>
+              </div>
+              <div className="flex items-center mb-3">
+                <Truck className="text-neutral-500 mr-2 h-5 w-5" />
+                <span>Livraison gratuite pour les commandes de plus de 500 MAD</span>
+              </div>
+              <div className="flex items-center">
+                <RefreshCw className="text-neutral-500 mr-2 h-5 w-5" />
+                <span>Retours gratuits sous 30 jours</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Related products */}
+        {relatedProducts && relatedProducts.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold mb-8">Vous aimerez aussi</h2>
+            
+            {isLoadingRelated ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, index) => (
+                  <div key={index} className="bg-white">
+                    <Skeleton className="h-[300px] w-full" />
+                    <div className="p-4">
+                      <Skeleton className="h-6 w-3/4 mb-2" />
+                      <Skeleton className="h-4 w-1/4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {relatedProducts
+                  .filter((p: any) => p.id !== product.id)
+                  .slice(0, 4)
+                  .map((relatedProduct: any) => (
+                    <ProductCard key={relatedProduct.id} product={relatedProduct} />
+                  ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </MainLayout>
+  );
+}
