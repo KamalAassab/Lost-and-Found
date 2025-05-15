@@ -94,6 +94,35 @@ LOST & FOUND is a modern, premium ecommerce platform focused on streetwear fashi
 - `shared/` - Shared types and utilities
 - `.env.example` - Example environment config
 
+#### Directory Tree
+```
+StreetStyleCentral/
+├── client/                # Frontend React app
+│   ├── public/            # Static assets
+│   └── src/
+│       ├── components/    # Reusable UI components
+│       ├── pages/         # Main pages (Home, Cart, Products, etc.)
+│       ├── layouts/       # Layout wrappers (MainLayout, AdminLayout)
+│       ├── context/       # React context (Cart, Auth, etc.)
+│       ├── hooks/         # Custom React hooks
+│       ├── lib/           # Utilities and helpers
+│       └── index.css      # Global styles
+├── server/                # Express backend
+│   ├── index.ts           # Server entry point
+│   ├── routes.ts          # API routes
+│   ├── storage.ts         # Database logic
+│   ├── vite.ts            # Vite server integration
+│   └── middleware.ts      # Express middleware
+├── db/                    # Database schema, migrations, seeders
+├── shared/                # Shared types and utilities
+├── public/                # Public assets (logo, images)
+├── package.json           # Project metadata and scripts
+├── README.md              # Project documentation
+├── .env.example           # Example environment variables
+├── tsconfig.json          # TypeScript config
+└── ...
+```
+
 ---
 
 ### Authors & Contact
@@ -194,6 +223,35 @@ LOST & FOUND est une plateforme e-commerce moderne et premium dédiée au street
 - `db/` - Schéma, migrations, seeds
 - `shared/` - Types et utilitaires partagés
 - `.env.example` - Exemple de configuration
+
+#### Arborescence du projet
+```
+StreetStyleCentral/
+├── client/                # Application React (frontend)
+│   ├── public/            # Fichiers statiques
+│   └── src/
+│       ├── components/    # Composants réutilisables
+│       ├── pages/         # Pages principales (Accueil, Panier, Produits, etc.)
+│       ├── layouts/       # Layouts (MainLayout, AdminLayout)
+│       ├── context/       # Context React (Panier, Auth, etc.)
+│       ├── hooks/         # Hooks personnalisés
+│       ├── lib/           # Utilitaires et helpers
+│       └── index.css      # Styles globaux
+├── server/                # Backend Express
+│   ├── index.ts           # Entrée serveur
+│   ├── routes.ts          # Routes API
+│   ├── storage.ts         # Logique base de données
+│   ├── vite.ts            # Intégration Vite serveur
+│   └── middleware.ts      # Middleware Express
+├── db/                    # Schéma, migrations, seeds
+├── shared/                # Types et utilitaires partagés
+├── public/                # Assets publics (logo, images)
+├── package.json           # Métadonnées et scripts
+├── README.md              # Documentation
+├── .env.example           # Exemple de configuration
+├── tsconfig.json          # Config TypeScript
+└── ...
+```
 
 ---
 
