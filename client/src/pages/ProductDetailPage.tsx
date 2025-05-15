@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import MainLayout from "@/layouts/MainLayout";
@@ -8,6 +8,8 @@ import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
 import { ArrowLeft, Check, Heart, Truck, RefreshCw } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 // Define product interface for stronger typing
 interface Product {
@@ -31,6 +33,9 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   
   const { addToCart } = useCart();
+  const { toast } = useToast();
+  const [isAddingWishlist, setIsAddingWishlist] = useState(false);
+  const [wishlistAdded, setWishlistAdded] = useState(false);
 
   // Fetch product details
   const { data: product, isLoading: isLoadingProduct } = useQuery<Product>({
@@ -51,6 +56,18 @@ export default function ProductDetailPage() {
     }
   }, [product]);
 
+  // Fetch wishlist on mount to check if product is already in wishlist
+  useEffect(() => {
+    async function checkWishlist() {
+      if (!product) return;
+      try {
+        const wishlist = await apiRequest("GET", "/api/wishlist");
+        setWishlistAdded(wishlist.some((item: any) => item.productId === product.id));
+      } catch {}
+    }
+    checkWishlist();
+  }, [product]);
+
   const handleAddToCart = () => {
     if (!product || !selectedSize) return;
     
@@ -64,7 +81,7 @@ export default function ProductDetailPage() {
       size: selectedSize,
       price: Number(product.price),
       name: product.name,
-      imageUrl: product.imageUrl,
+      imageUrl: `/uploads/${product.image}`,
       category: categoryValue
     });
   };
@@ -77,6 +94,26 @@ export default function ProductDetailPage() {
 
   const increaseQuantity = () => {
     setQuantity(quantity + 1);
+  };
+
+  const handleToggleWishlist = async () => {
+    if (!product) return;
+    setIsAddingWishlist(true);
+    try {
+      if (wishlistAdded) {
+        await apiRequest("DELETE", `/api/wishlist/${product.id}`);
+        setWishlistAdded(false);
+        toast({ title: "Retiré de la liste de souhaits", description: "Ce produit a été retiré de votre liste de souhaits." });
+      } else {
+        await apiRequest("POST", "/api/wishlist", { productId: product.id });
+        setWishlistAdded(true);
+        toast({ title: "Ajouté à la liste de souhaits", description: "Ce produit a été ajouté à votre liste de souhaits." });
+      }
+    } catch (error: any) {
+      toast({ title: "Erreur", description: error?.message || "Erreur lors de la mise à jour de la liste de souhaits", variant: "destructive" });
+    } finally {
+      setIsAddingWishlist(false);
+    }
   };
 
   if (isLoadingProduct) {
@@ -113,10 +150,38 @@ export default function ProductDetailPage() {
     );
   }
 
+  // Ensure sizes is always an array (robust)
+  let sizes: string[] = [];
+  if (Array.isArray(product.sizes)) {
+    sizes = product.sizes;
+  } else if (typeof product.sizes === "string") {
+    try {
+      // Try parsing once
+      sizes = JSON.parse(product.sizes);
+      // If the result is still a string, parse again (handles double-stringified)
+      if (typeof sizes === "string") {
+        sizes = JSON.parse(sizes);
+      }
+      if (!Array.isArray(sizes)) sizes = [];
+    } catch (e) {
+      console.error("[ProductDetailPage] JSON parse error:", e, product.sizes);
+      sizes = [];
+    }
+  } else {
+    sizes = [];
+  }
+  // Fallback: if no sizes, enable all
+  if (sizes.length === 0) {
+    sizes = ["XS", "S", "M", "L", "XL", "XXL"];
+  }
+
   const hasDiscount = product.oldPrice != null;
   const discountPercentage = hasDiscount
     ? Math.round(((Number(product.oldPrice) - Number(product.price)) / Number(product.oldPrice)) * 100)
     : 0;
+
+  // Always show all standard sizes, but only enable those available for this product
+  const allSizes = ["XS", "S", "M", "L", "XL", "XXL"];
 
   return (
     <MainLayout>
@@ -147,7 +212,7 @@ export default function ProductDetailPage() {
               </div>
             )}
             <img
-              src={product.imageUrl}
+              src={`/uploads/${product.image}`}
               alt={product.name}
               className="w-full h-auto object-cover"
             />
@@ -175,19 +240,26 @@ export default function ProductDetailPage() {
             <div className="mb-6">
               <h3 className="font-semibold mb-2">Taille</h3>
               <div className="flex flex-wrap gap-2">
-                {product.sizes.map((size: string) => (
-                  <button
-                    key={size}
-                    className={`border px-4 py-2 text-sm ${
-                      selectedSize === size
-                        ? "border-primary bg-primary text-white"
-                        : "border-neutral-300 hover:border-primary"
-                    }`}
-                    onClick={() => setSelectedSize(size)}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {allSizes.map((size) => {
+                  const available = sizes.includes(size);
+                  return (
+                    <button
+                      key={size}
+                      className={`border px-4 py-2 text-sm ${
+                        selectedSize === size && available
+                          ? "border-primary bg-primary text-white"
+                          : available
+                            ? "border-neutral-300 hover:border-primary"
+                            : "border-neutral-200 text-neutral-400 cursor-not-allowed bg-neutral-100"
+                      }`}
+                      onClick={() => available && setSelectedSize(size)}
+                      disabled={!available}
+                      type="button"
+                    >
+                      {size}
+                    </button>
+                  );
+                })}
               </div>
               {!selectedSize && (
                 <p className="text-red-500 text-sm mt-2">
@@ -228,10 +300,13 @@ export default function ProductDetailPage() {
                 Ajouter au panier
               </Button>
               <Button
-                variant="outline"
-                className="w-12 h-12 flex items-center justify-center border border-neutral-300 hover:border-primary hover:text-primary transition duration-300"
+                variant={wishlistAdded ? "default" : "outline"}
+                className={`w-12 h-12 flex items-center justify-center border border-neutral-300 transition duration-300 ${wishlistAdded ? 'bg-primary text-white border-primary' : 'hover:border-primary hover:text-primary'}`}
+                onClick={handleToggleWishlist}
+                disabled={isAddingWishlist}
+                aria-label={wishlistAdded ? "Retirer de la liste de souhaits" : "Ajouter à la liste de souhaits"}
               >
-                <Heart className="h-5 w-5" />
+                <Heart className={`h-5 w-5 ${wishlistAdded ? 'fill-current' : ''}`} />
               </Button>
             </div>
 

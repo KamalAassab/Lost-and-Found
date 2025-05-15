@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const checkAuth = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/admin/check', {
+        const response = await fetch('/api/check', {
           credentials: 'include'
         });
         const data = await response.json();
@@ -64,67 +64,42 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      const response = await apiRequest('POST', '/api/admin/login', { username, password });
-      const userData = await response.json();
-      
+      const userData = await apiRequest('POST', '/api/login', { username, password });
       setUser(userData);
-      
       toast({
         title: "Connexion réussie",
         description: `Bienvenue, ${userData.username}!`,
       });
-      
       return true;
     } catch (error) {
       console.error("Login error:", error);
-      
       toast({
-        title: "Erreur de connexion",
-        description: "Identifiants invalides. Veuillez réessayer.",
+        title: "Erreur",
+        description: "Identifiants invalides",
         variant: "destructive",
       });
-      
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = async (): Promise<void> => {
+  const logout = async () => {
     try {
       setIsLoading(true);
-      await apiRequest('POST', '/api/admin/logout', {});
-      
-      setUser(null);
-      
-      // Clear any cached data
-      queryClient.clear();
-      
-      toast({
-        title: "Déconnexion réussie",
+      await fetch('/api/logout', {
+        credentials: 'include'
       });
+      setUser(null);
     } catch (error) {
       console.error("Logout error:", error);
-      
-      toast({
-        title: "Erreur de déconnexion",
-        description: "Une erreur est survenue lors de la déconnexion.",
-        variant: "destructive",
-      });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        login,
-        logout,
-        isLoading,
-      }}
-    >
+    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

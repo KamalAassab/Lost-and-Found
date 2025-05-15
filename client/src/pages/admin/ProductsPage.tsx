@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import AdminLayout from "@/layouts/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,8 @@ import {
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle 
+  DialogTitle,
+  DialogDescription
 } from "@/components/ui/dialog";
 import { 
   Select, 
@@ -40,6 +41,7 @@ export default function AdminProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const formDialogRef = useRef<HTMLDivElement>(null);
   
   const { toast } = useToast();
 
@@ -72,11 +74,11 @@ export default function AdminProductsPage() {
       setIsDeleteDialogOpen(false);
       setProductToDelete(null);
     },
-    onError: (error) => {
-      console.error("Error deleting product:", error);
+    onError: (error: any) => {
+      console.error("Product deletion error details:", error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la suppression du produit.",
+        description: (error.details || error.message) ?? "Une erreur est survenue lors de la suppression du produit.",
         variant: "destructive",
       });
     }
@@ -101,6 +103,10 @@ export default function AdminProductsPage() {
   const openNewProductModal = () => {
     setEditingProduct(null);
     setIsOpen(true);
+    // Scroll to the form dialog after it opens
+    setTimeout(() => {
+      formDialogRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
   };
 
   const openEditProductModal = (product: any) => {
@@ -160,8 +166,8 @@ export default function AdminProductsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Toutes</SelectItem>
-              <SelectItem value="hoodie">Hoodies</SelectItem>
-              <SelectItem value="tshirt">T-shirts</SelectItem>
+              <SelectItem value="hoodies">Hoodies</SelectItem>
+              <SelectItem value="tshirts">T-shirts</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -204,7 +210,7 @@ export default function AdminProductsPage() {
                         <TableCell className="font-medium">{product.id}</TableCell>
                         <TableCell>
                           <img 
-                            src={product.imageUrl} 
+                            src={`/uploads/${product.image}`} 
                             alt={product.name} 
                             className="w-12 h-12 object-cover rounded"
                           />
@@ -212,7 +218,11 @@ export default function AdminProductsPage() {
                         <TableCell>{product.name}</TableCell>
                         <TableCell>
                           <span className="capitalize">
-                            {product.category === "hoodie" ? "Hoodie" : "T-shirt"}
+                            {product.category === "hoodies" || product.category === "hoodie"
+                              ? "Hoodie"
+                              : product.category === "tshirts" || product.category === "tshirt"
+                                ? "T-shirt"
+                                : product.category}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -317,16 +327,19 @@ export default function AdminProductsPage() {
 
       {/* Product Form Dialog */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg" ref={formDialogRef}>
           <DialogHeader>
             <DialogTitle>
               {editingProduct ? 'Modifier le produit' : 'Ajouter un produit'}
             </DialogTitle>
+            <DialogDescription>
+              {editingProduct ? 'Modifiez les informations du produit' : 'Remplissez les informations pour créer un nouveau produit'}
+            </DialogDescription>
           </DialogHeader>
           <ProductForm
             product={editingProduct}
             categories={categories || []}
-            onClose={() => setIsOpen(false)}
+            onClose={() => setIsOpen(false)} 
           />
         </DialogContent>
       </Dialog>
@@ -336,9 +349,12 @@ export default function AdminProductsPage() {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogDescription>
+              Cette action est irréversible. Le produit sera définitivement supprimé.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <p>Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.</p>
+            <p>Êtes-vous sûr de vouloir supprimer ce produit ?</p>
             {productToDelete && (
               <div className="mt-4 p-4 bg-gray-50 rounded-md">
                 <p className="font-medium">{productToDelete.name}</p>

@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import AdminLayout from "@/layouts/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, ShoppingBag, CreditCard, TrendingUp } from "lucide-react";
+import { Package, ShoppingBag, CreditCard, TrendingUp, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   BarChart, 
@@ -39,10 +39,19 @@ const groupOrdersByStatus = (orders: any[]) => {
   };
   
   orders.forEach(order => {
-    statusCounts[order.status as keyof typeof statusCounts] += 1;
+    if (order.status && statusCounts.hasOwnProperty(order.status)) {
+      statusCounts[order.status as keyof typeof statusCounts]++;
+    }
   });
   
-  return Object.entries(statusCounts).map(([name, value]) => ({ name, value }));
+  return Object.entries(statusCounts).map(([name, value]) => ({
+    name: name === 'pending' ? 'En attente' :
+          name === 'processing' ? 'En traitement' :
+          name === 'shipped' ? 'Expédiée' :
+          name === 'delivered' ? 'Livrée' :
+          name === 'cancelled' ? 'Annulée' : name,
+    value
+  }));
 };
 
 // Dashboard analytics
@@ -55,46 +64,71 @@ export default function DashboardPage() {
   }, []);
   
   // Fetch orders
-  const { data: orders, isLoading: isLoadingOrders } = useQuery({ 
+  const { data: ordersRaw, isLoading: isLoadingOrders } = useQuery({ 
     queryKey: ['/api/orders'],
   });
+  const orders = Array.isArray(ordersRaw) ? ordersRaw : [];
   
   // Fetch products
-  const { data: products, isLoading: isLoadingProducts } = useQuery({ 
+  const { data: productsRaw, isLoading: isLoadingProducts } = useQuery({ 
     queryKey: ['/api/products'],
   });
+  const products = Array.isArray(productsRaw) ? productsRaw : [];
 
   // Calculate dashboard stats
-  const totalOrders = orders?.length || 0;
-  const totalProducts = products?.length || 0;
+  const totalOrders = orders.length;
+  const totalProducts = products.length;
   
-  const totalRevenue = orders
-    ? orders.reduce((sum: number, order: any) => sum + Number(order.total), 0)
-    : 0;
+  const totalRevenue = orders.reduce((sum: number, order: any) => sum + Number(order.total), 0);
     
-  const pendingOrders = orders
-    ? orders.filter((order: any) => order.status === 'pending' || order.status === 'processing').length
-    : 0;
+  const pendingOrders = orders.filter((order: any) => order.status === 'pending' || order.status === 'processing').length;
+
+  // --- Visitors per day (demo: random number between 10 and 50) ---
+  const averageVisitorsPerDay =  Math.floor(Math.random() * 41) + 10;
 
   // Create chart data
-  const statusData = orders ? groupOrdersByStatus(orders) : [];
+  const statusData = groupOrdersByStatus(orders);
+  const statusDataNonZero = statusData.filter(d => d.value > 0);
   
-  const recentOrders = orders 
-    ? [...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5) 
-    : [];
+  const recentOrders = [...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
     
   // Category data
-  const categoryData = products 
-    ? products.reduce((acc: {[key: string]: number}, product: any) => {
-        acc[product.category] = (acc[product.category] || 0) + 1;
+  const categoryData = products.reduce((acc: {[key: string]: number}, product: any) => {
+    let key = product.category?.toLowerCase();
+    if (key === 'hoodie' || key === 'hoodies') key = 'Hoodies';
+    else if (key === 'tshirt' || key === 'tshirts') key = 'T-shirts';
+    else key = key?.charAt(0).toUpperCase() + key?.slice(1);
+    acc[key] = (acc[key] || 0) + 1;
         return acc;
-      }, {}) 
-    : {};
+  }, {});
     
   const categoryChartData = Object.entries(categoryData).map(([name, value]) => ({ 
-    name: name === 'hoodie' ? 'Hoodies' : 'T-shirts', 
+    name, 
     value 
   }));
+
+  // Always show all statuses in the chart, even if value is 0
+  const allStatusLabels = [
+    'En attente',
+    'En traitement',
+    'Expédiée',
+    'Livrée',
+    'Annulée'
+  ];
+  const statusDataFull = allStatusLabels.map((label) => {
+    const found = statusData.find(d => d.name === label);
+    return found || { name: label, value: 0 };
+  });
+
+  // Count hoodies and t-shirts (case-insensitive, singular/plural)
+  const hoodieCount = products.filter((p: any) => {
+    const cat = (p.category || '').toLowerCase();
+    return cat === 'hoodie' || cat === 'hoodies';
+  }).length;
+  const tshirtCount = products.filter((p: any) => {
+    const cat = (p.category || '').toLowerCase();
+    return cat === 'tshirt' || cat === 'tshirts' || cat === 't-shirt' || cat === 't-shirts';
+  }).length;
 
   return (
     <AdminLayout>
@@ -134,7 +168,7 @@ export default function DashboardPage() {
                 <div className="text-2xl font-bold">{totalProducts}</div>
               )}
               <p className="text-xs text-muted-foreground">
-                {products?.filter((p: any) => p.category === 'hoodie').length || 0} hoodies, {products?.filter((p: any) => p.category === 'tshirt').length || 0} t-shirts
+                {hoodieCount} hoodies, {tshirtCount} t-shirts
               </p>
             </CardContent>
           </Card>
@@ -152,28 +186,20 @@ export default function DashboardPage() {
                 <div className="text-2xl font-bold">{formatPrice(totalRevenue)}</div>
               )}
               <p className="text-xs text-muted-foreground">
-                +{orders?.filter((order: any) => order.status === 'delivered').length || 0} commandes livrées
+                +{orders.filter((order: any) => order.status === 'delivered').length || 0} commandes livrées
               </p>
             </CardContent>
           </Card>
           
-          {/* Average Order Value */}
+          {/* Average Visitors Per Day */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Panier Moyen</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Visiteurs Moyens / Jour</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              {isLoadingOrders ? (
-                <Skeleton className="h-7 w-20" />
-              ) : (
-                <div className="text-2xl font-bold">
-                  {totalOrders ? formatPrice(totalRevenue / totalOrders) : formatPrice(0)}
-                </div>
-              )}
-              <p className="text-xs text-muted-foreground">
-                sur {totalOrders} commandes
-              </p>
+              <div className="text-2xl font-bold">{averageVisitorsPerDay}</div>
+              <p className="text-xs text-muted-foreground">Toujours plus de 0 visiteurs !</p>
             </CardContent>
           </Card>
         </div>
@@ -190,27 +216,67 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-center h-full">
                   <Skeleton className="h-full w-full" />
                 </div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={statusData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
+              ) : statusDataFull.length > 0 ? (
+                <>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={statusDataFull}
+                      layout="vertical"
+                      margin={{ top: 20, right: 40, left: 40, bottom: 5 }}
+                      barCategoryGap={30}
                     >
-                      {statusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => [`${value} commandes`, '']} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                      <XAxis type="number" allowDecimals={false} tick={{ fontWeight: 600, fontSize: 14 }} />
+                      <YAxis type="category" dataKey="name" tick={{ fontWeight: 600, fontSize: 15 }} width={120} />
+                      <Tooltip formatter={(value) => [`${value} commandes`, '']} />
+                      <Bar dataKey="value" name="Nombre de commandes" radius={[0, 8, 8, 0]} barSize={32}>
+                        {statusDataFull.map((entry, index) => (
+                          <Cell key={`cell-bar-h-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                        {/* Value labels at the end of bars */}
+                        {statusDataFull.map((entry, index) => (
+                          <text
+                            key={`label-bar-h-${index}`}
+                            x={entry.value * 40 + 60}
+                            y={index * (100 / statusDataFull.length) + 45}
+                            dx={0}
+                            dy={-10}
+                            textAnchor="start"
+                            fontSize={15}
+                            fontWeight={700}
+                            fill="#222"
+                            style={{ pointerEvents: 'none' }}
+                          >
+                            {entry.value > 0 ? entry.value : ''}
+                          </text>
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                  {/* Custom Legend for Order Status */}
+                  <div className="flex justify-center gap-2 mt-1 flex-wrap">
+                    {statusDataFull.map((entry, index) => (
+                      <div key={entry.name} className="flex items-center gap-1">
+                        <span
+                          style={{
+                            backgroundColor: COLORS[index % COLORS.length],
+                            width: 12,
+                            height: 12,
+                            borderRadius: 3,
+                            display: 'inline-block',
+                          }}
+                        ></span>
+                        <span className="font-semibold text-xs" style={{ color: COLORS[index % COLORS.length] }}>
+                          {entry.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-muted-foreground">Aucune donnée disponible</p>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -220,25 +286,61 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle>Répartition des Produits</CardTitle>
             </CardHeader>
-            <CardContent className="h-80">
+            <CardContent className="h-80 flex flex-col justify-between">
               {isLoadingProducts ? (
                 <div className="flex items-center justify-center h-full">
                   <Skeleton className="h-full w-full" />
                 </div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
+              ) : categoryChartData.length > 0 ? (
+                <>
+                  <ResponsiveContainer width="100%" height="85%">
                   <BarChart
                     data={categoryChartData}
                     margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                      barCategoryGap={30}
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" tick={{ fontWeight: 600, fontSize: 14 }} />
+                      <YAxis allowDecimals={false} tick={{ fontWeight: 600, fontSize: 14 }} />
                     <Tooltip formatter={(value) => [`${value} produits`, '']} />
-                    <Legend />
-                    <Bar dataKey="value" fill="#8884d8" name="Nombre de produits" />
+                      <Bar dataKey="value" name="Nombre de produits" radius={[8, 8, 0, 0]} barSize={38}>
+                        {categoryChartData.map((entry, index) => (
+                          <Cell key={`cell-bar-cat-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                        {/* Value labels above bars */}
+                        {categoryChartData.map((entry, index) => (
+                          <text
+                            key={`label-bar-cat-${index}`}
+                            x={index * (100 / categoryChartData.length) + 10 + '%'}
+                            y={60}
+                            dx={0}
+                            dy={-10}
+                            textAnchor="middle"
+                            fontSize={14}
+                            fontWeight={700}
+                            fill="#222"
+                            style={{ pointerEvents: 'none' }}
+                          >
+                            {entry.value > 0 ? entry.value : ''}
+                          </text>
+                        ))}
+                      </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                  {/* Custom Legend */}
+                  <div className="flex justify-center gap-6 mt-2">
+                    {categoryChartData.map((entry, index) => (
+                      <div key={`legend-cat-${index}`} className="flex items-center gap-2">
+                        <span style={{ backgroundColor: COLORS[index % COLORS.length], width: 16, height: 16, borderRadius: 4, display: 'inline-block' }}></span>
+                        <span className="font-semibold" style={{ color: COLORS[index % COLORS.length] }}>{entry.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-muted-foreground">Aucune donnée disponible</p>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -258,10 +360,17 @@ export default function DashboardPage() {
               </div>
             ) : recentOrders.length > 0 ? (
               <div className="space-y-4">
-                {recentOrders.map((order: any) => (
+                {recentOrders.map((order: any) => {
+                  // Friendly order number: position in sorted list (oldest first)
+                  const sorted = [...orders].sort(
+                    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                  );
+                  const idx = sorted.findIndex(o => o.id === order.id);
+                  const friendlyOrderNumber = idx >= 0 ? idx + 1 : order.id;
+                  return (
                   <div key={order.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
                     <div className="flex flex-col">
-                      <span className="font-medium">Commande #{order.id}</span>
+                        <span className="font-medium">Commande #{friendlyOrderNumber}</span>
                       <span className="text-sm text-muted-foreground">
                         {formatDate(order.createdAt)} - {order.customerName}
                       </span>
@@ -284,7 +393,11 @@ export default function DashboardPage() {
                               'rgb(150, 150, 150)'
                           }}
                         >
-                          {order.status}
+                          {order.status === 'pending' ? 'En attente' :
+                           order.status === 'processing' ? 'En traitement' :
+                           order.status === 'shipped' ? 'Expédiée' :
+                           order.status === 'delivered' ? 'Livrée' :
+                           order.status === 'cancelled' ? 'Annulée' : order.status}
                         </span>
                       </div>
                       <div className="text-right">
@@ -292,7 +405,8 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-center py-4 text-muted-foreground">Aucune commande récente</p>

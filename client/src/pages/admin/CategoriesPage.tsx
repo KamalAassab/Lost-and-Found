@@ -152,7 +152,7 @@ export default function CategoriesPage() {
 
       {/* Category Form Dialog */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingCategory ? 'Modifier la catégorie' : 'Ajouter une catégorie'}

@@ -1,43 +1,75 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import * as storage from "./storage";
+import * as storageService from "./storage";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import session from "express-session";
-import pgSessionStore from "connect-pg-simple";
-import { pool } from "../db";
+import type { Session } from "express-session";
+import { db } from "../db";
 import * as schema from "@shared/schema";
+import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import { requireAdmin } from './middleware';
+import { eq, and, desc } from "drizzle-orm";
+import { createOrder, calculateOrderTotal, isShippingFree } from "./storage";
 
 const JWT_SECRET = process.env.JWT_SECRET || "lost_and_found_secret_key";
-const PgSession = pgSessionStore(session);
+
+interface CustomSession extends Session {
+  user?: {
+    id: number;
+    username: string;
+    isAdmin: boolean;
+  };
+}
+
+// Configure multer for file uploads
+const multerStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/uploads/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: multerStorage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'));
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
+
+const { getCategoryById } = storageService;
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup session middleware for admin authentication
+  // Add express.json() middleware to parse JSON bodies
+  app.use(express.json());
+
+  // Use the session middleware with MemoryStore
   app.use(
     session({
-      store: new PgSession({
-        pool: pool as any,
-        tableName: "session",
-        createTableIfMissing: true,
-      }),
       secret: JWT_SECRET,
       resave: false,
       saveUninitialized: false,
       cookie: {
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        secure: process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === 'production', // true in production, false in development
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' in production, 'lax' in development
+        httpOnly: true,
       },
     })
   );
-
-  // Authentication middleware for admin routes
-  const requireAdmin = async (req: any, res: any, next: any) => {
-    if (!req.session.user || !req.session.user.isAdmin) {
-      return res.status(401).json({ message: "Non autorisé" });
-    }
-    next();
-  };
 
   // API Routes
   const apiPrefix = "/api";
@@ -45,7 +77,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Category routes
   app.get(`${apiPrefix}/categories`, async (req, res) => {
     try {
-      const categories = await storage.getAllCategories();
+      const categories = await storageService.getAllCategories();
       res.json(categories);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -55,7 +87,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get(`${apiPrefix}/categories/:slug`, async (req, res) => {
     try {
-      const category = await storage.getCategoryBySlug(req.params.slug);
+      const category = await storageService.getCategoryBySlug(req.params.slug);
       if (!category) {
         return res.status(404).json({ message: "Catégorie non trouvée" });
       }
@@ -66,10 +98,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post(`${apiPrefix}/categories`, requireAdmin, async (req, res) => {
+  app.post(`${apiPrefix}/categories`, requireAdmin, upload.single('backgroundImage'), async (req, res) => {
     try {
-      const data = schema.categoriesInsertSchema.parse(req.body);
-      const category = await storage.createCategory(data);
+      // Get fields from req.body and file from req.file
+      const { name, slug, description } = req.body;
+      const backgroundImageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
+      // Build the data object for validation and DB
+      const data = {
+        name,
+        slug,
+        description,
+        backgroundImageUrl
+      };
+
+      // Validate (if your schema allows backgroundImageUrl, otherwise add it)
+      // If not, remove validation for now and add it to your schema later
+      // const validData = schema.categoriesInsertSchema.parse(data);
+
+      const category = await storageService.createCategory(data);
       res.status(201).json(category);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -80,28 +127,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put(`${apiPrefix}/categories/:id`, requireAdmin, async (req, res) => {
+  app.put(`${apiPrefix}/categories/:id`, requireAdmin, upload.single('backgroundImage'), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const data = schema.categoriesInsertSchema.parse(req.body);
-      const category = await storage.updateCategory(id, data);
+      
+      // Get the current category to ensure we have all fields
+      const currentCategory = await getCategoryById(id);
+      if (!currentCategory) {
+        return res.status(404).json({ message: "Catégorie non trouvée" });
+      }
+
+      // Build update data with current values as fallback
+      const data = {
+        name: req.body.name || currentCategory.name,
+        slug: req.body.slug || currentCategory.slug,
+        description: req.body.description || currentCategory.description || "",
+        backgroundImageUrl: req.body.backgroundImageUrl || currentCategory.backgroundImageUrl
+      };
+
+      // If a new file was uploaded, update the backgroundImageUrl
+      if (req.file) {
+        data.backgroundImageUrl = `/uploads/${req.file.filename}`;
+      }
+
+      // Validate the data
+      const validData = schema.categoriesInsertSchema.parse(data);
+      
+      // Update the category
+      const category = await storageService.updateCategory(id, validData);
       if (!category) {
         return res.status(404).json({ message: "Catégorie non trouvée" });
       }
+      
       res.json(category);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ errors: error.errors });
       }
       console.error("Error updating category:", error);
-      res.status(500).json({ message: "Erreur lors de la mise à jour de la catégorie" });
+      res.status(500).json({ 
+        message: "Erreur lors de la mise à jour de la catégorie",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
   app.delete(`${apiPrefix}/categories/:id`, requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const category = await storage.deleteCategory(id);
+      const category = await storageService.deleteCategory(id);
       if (!category) {
         return res.status(404).json({ message: "Catégorie non trouvée" });
       }
@@ -116,7 +190,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get(`${apiPrefix}/products`, async (req, res) => {
     try {
       const { category, search, featured } = req.query;
-      const products = await storage.getAllProducts(
+      const products = await storageService.getAllProducts(
         category as string | undefined,
         search as string | undefined,
         featured === "true"
@@ -130,7 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get(`${apiPrefix}/products/:slug`, async (req, res) => {
     try {
-      const product = await storage.getProductBySlug(req.params.slug);
+      const product = await storageService.getProductBySlug(req.params.slug);
       if (!product) {
         return res.status(404).json({ message: "Produit non trouvé" });
       }
@@ -141,17 +215,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post(`${apiPrefix}/products`, requireAdmin, async (req, res) => {
+  app.post(`${apiPrefix}/products`, requireAdmin, upload.single('image'), async (req, res) => {
     try {
-      const data = schema.productsInsertSchema.parse(req.body);
-      const product = await storage.createProduct(data);
+      // Extract fields from req.body and file from req.file
+      const { name, slug, description, price, oldPrice, category, categoryId, inStock, featured, sizes } = req.body;
+      const file = req.file;
+      if (!file) {
+        return res.status(400).json({ message: "Image du produit requise." });
+      }
+      // Build product data
+      const productData = {
+        name,
+        slug,
+        description,
+        image: file.filename,
+        price: price ? Number(price) : undefined,
+        oldPrice: oldPrice ? Number(oldPrice) : undefined,
+        category,
+        categoryId: Number(categoryId),
+        inStock: inStock === 'true' || inStock === true,
+        featured: featured === 'true' || featured === true,
+        sizes: typeof sizes === 'string' ? sizes : JSON.stringify(sizes),
+      };
+      console.log('Received productData:', productData);
+      // Validate and create product
+      const data = schema.productsInsertSchema.parse(productData);
+      const product = await storageService.createProduct(data);
       res.status(201).json(product);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error('Validation error:', error.errors);
         return res.status(400).json({ errors: error.errors });
       }
       console.error("Error creating product:", error);
-      res.status(500).json({ message: "Erreur lors de la création du produit" });
+      res.status(500).json({ 
+        message: "Erreur lors de la création du produit",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
@@ -159,7 +259,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const data = schema.productsInsertSchema.parse(req.body);
-      const product = await storage.updateProduct(id, data);
+      const product = await storageService.updateProduct(id, data);
       if (!product) {
         return res.status(404).json({ message: "Produit non trouvé" });
       }
@@ -176,24 +276,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete(`${apiPrefix}/products/:id`, requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const product = await storage.deleteProduct(id);
+      const product = await storageService.deleteProduct(id);
       if (!product) {
         return res.status(404).json({ message: "Produit non trouvé" });
       }
       res.json({ message: "Produit supprimé avec succès" });
     } catch (error) {
       console.error("Error deleting product:", error);
-      res.status(500).json({ message: "Erreur lors de la suppression du produit" });
+      res.status(500).json({ 
+        message: "Erreur lors de la suppression du produit",
+        details: error && typeof error === 'object' && 'message' in error ? error.message : JSON.stringify(error)
+      });
     }
   });
 
-  // Admin authentication
-  app.post(`${apiPrefix}/admin/login`, async (req, res) => {
+  // User registration
+  app.post(`${apiPrefix}/signup`, async (req, res) => {
+    const { username, email, password } = req.body;
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "Tous les champs sont requis" });
+    }
+    // Check if username exists
+    const existingUser = await db.query.users.findFirst({ where: eq(schema.users.username, username) });
+      if (existingUser) {
+      return res.status(400).json({ message: "Nom d'utilisateur déjà pris" });
+      }
+    // Check if email exists
+    const existingEmail = await db.query.users.findFirst({ where: eq(schema.users.email, email) });
+    if (existingEmail) {
+      return res.status(400).json({ message: "Email déjà utilisé" });
+      }
+    // Hash password and insert
+    const hashed = await bcrypt.hash(password, 10);
+    await db.insert(schema.users).values({ username, password: hashed, email });
+    res.status(201).json({ message: "Compte créé" });
+  });
+
+  // Unified login endpoint for both admin and client
+  app.post(`${apiPrefix}/login`, async (req: express.Request & { session: CustomSession }, res) => {
     try {
       const { username, password } = req.body;
-      const user = await storage.getUserByUsername(username);
+      const user = await storageService.getUserByUsername(username);
       
-      if (!user || !user.isAdmin) {
+      if (!user) {
         return res.status(401).json({ message: "Identifiants invalides" });
       }
       
@@ -203,7 +328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Set user session
-      (req.session as any).user = {
+      req.session.user = {
         id: user.id,
         username: user.username,
         isAdmin: user.isAdmin,
@@ -220,23 +345,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post(`${apiPrefix}/admin/logout`, (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ message: "Erreur lors de la déconnexion" });
-      }
-      res.json({ message: "Déconnecté avec succès" });
-    });
-  });
-
-  app.get(`${apiPrefix}/admin/check`, (req: any, res) => {
-    if ((req.session as any).user && (req.session as any).user.isAdmin) {
+  // Remove the old admin login endpoint since we now have a unified one
+  // Keep the admin check endpoint for verifying admin status
+  app.get(`${apiPrefix}/admin/check`, (req: express.Request & { session: CustomSession }, res) => {
+    if (req.session?.user?.isAdmin) {
       return res.json({
         authenticated: true,
         user: {
-          id: (req.session as any).user.id,
-          username: (req.session as any).user.username,
-          isAdmin: (req.session as any).user.isAdmin,
+          id: req.session.user.id,
+          username: req.session.user.username,
+          isAdmin: req.session.user.isAdmin,
         },
       });
     }
@@ -246,71 +364,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Order routes
   app.post(`${apiPrefix}/orders`, async (req, res) => {
     try {
-      const checkoutData = schema.checkoutSchema.parse(req.body);
+      const {
+        customerName,
+        customerEmail,
+        customerPhone,
+        shippingAddress,
+        city,
+        postalCode,
+        paymentMethod,
+        items,
+        promoApplied
+      } = req.body;
       
-      // Get product details to verify prices and categories
-      const productIds = checkoutData.items.map(item => item.productId);
-      const products = await Promise.all(
-        productIds.map(id => storage.getProductById(id))
+      // Calculate total and free_shipping on the backend
+      const total = calculateOrderTotal(items || []);
+      const free_shipping = isShippingFree(total);
+
+      // Use the createOrder helper to insert the order and items
+      const order = await createOrder(
+        {
+          customerName,
+          customerEmail,
+          customerPhone,
+          shippingAddress,
+          city,
+          postalCode,
+          paymentMethod,
+          total,
+          free_shipping,
+          promoApplied
+        },
+        items || []
       );
-      
-      // Prepare items with product categories
-      const itemsWithCategories = checkoutData.items.map(item => {
-        const product = products.find(p => p && p.id === item.productId);
-        if (!product) {
-          throw new Error(`Produit non trouvé: ${item.productId}`);
-        }
-        return {
-          ...item,
-          category: product.category,
-        };
-      });
-      
-      // Apply promotions
-      const promotionResult = storage.calculatePromotions(itemsWithCategories);
-      
-      // Calculate total
-      const total = storage.calculateOrderTotal(promotionResult.items);
-      
-      // Check if free shipping applies
-      const freeShipping = storage.isShippingFree(total);
-      
-      // Create order
-      const orderData = {
-        customerName: checkoutData.customerName,
-        customerEmail: checkoutData.customerEmail,
-        customerPhone: checkoutData.customerPhone,
-        shippingAddress: checkoutData.shippingAddress,
-        city: checkoutData.city,
-        postalCode: checkoutData.postalCode,
-        paymentMethod: checkoutData.paymentMethod,
-        total: total.toString(), // Convert number to string for database compatibility
-        freeShipping,
-        promoApplied: promotionResult.promoApplied,
-      };
-      
-      // Prepare order items
-      const orderItems = promotionResult.items.map(item => {
-        const isFree = (item as any).isFree && (item as any).freeCount ? (item as any).freeCount > 0 : false;
-        return {
-          productId: item.productId,
-          quantity: item.quantity,
-          size: item.size,
-          price: item.price.toString(), // Convert to string for database compatibility
-          isFree,
-        };
-      });
-      
-      const order = await storage.createOrder(orderData, orderItems);
-      
-      res.status(201).json({
-        order,
-        promoApplied: promotionResult.promoApplied,
-        freeHoodiesCount: promotionResult.freeHoodiesCount,
-        freeTshirtsCount: promotionResult.freeTshirtsCount,
-        freeShipping,
-        total,
-      });
+
+      res.json({ order });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ errors: error.errors });
@@ -322,7 +409,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get(`${apiPrefix}/orders`, requireAdmin, async (req, res) => {
     try {
-      const orders = await storage.getAllOrders();
+      const orders = await storageService.getAllOrders();
       res.json(orders);
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -333,7 +420,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get(`${apiPrefix}/orders/:id`, requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const order = await storage.getOrderById(id);
+      const order = await storageService.getOrderById(id);
       if (!order) {
         return res.status(404).json({ message: "Commande non trouvée" });
       }
@@ -348,19 +435,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const { status } = req.body;
+      console.log('Order status update request:', { id, status });
       
-      if (!schema.orderStatusEnum.enumValues.includes(status)) {
-        return res.status(400).json({ message: "Statut invalide" });
+      // Validate status
+      if (!status || typeof status !== 'string') {
+        return res.status(400).json({ message: "Le statut est requis" });
       }
       
-      const order = await storage.updateOrderStatus(id, status);
+      // Validate status value
+      const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'] as const;
+      if (!validStatuses.includes(status as any)) {
+        return res.status(400).json({ 
+          message: "Statut invalide",
+          validStatuses 
+        });
+      }
+      
+      // Check if order exists
+      const existingOrder = await storageService.getOrderById(id);
+      if (!existingOrder) {
+        return res.status(404).json({ message: "Commande non trouvée" });
+      }
+      
+      // Update order status
+      const order = await storageService.updateOrderStatus(id, status as schema.Order['status']);
       if (!order) {
         return res.status(404).json({ message: "Commande non trouvée" });
       }
+      
       res.json(order);
     } catch (error) {
       console.error("Error updating order status:", error);
-      res.status(500).json({ message: "Erreur lors de la mise à jour du statut de la commande" });
+      res.status(500).json({ message: "Erreur lors de la mise à jour du statut de la commande", details: error instanceof Error ? error.message : error });
     }
   });
 
@@ -369,10 +475,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email } = req.body;
       const validatedEmail = schema.subscribersInsertSchema.parse({ email }).email;
-      const result = await storage.addSubscriber(validatedEmail);
+      const result = await storageService.addSubscriber(validatedEmail);
       
-      if ('error' in result) {
+      if (result && 'error' in result) {
         return res.status(400).json({ message: result.error });
+      } else if (!result) {
+        return res.status(500).json({ message: "Subscription failed" });
       }
       
       res.status(201).json({ message: "Inscription réussie à la newsletter" });
@@ -382,6 +490,208 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Error subscribing to newsletter:", error);
       res.status(500).json({ message: "Erreur lors de l'inscription à la newsletter" });
+    }
+  });
+
+  // Add file upload endpoint
+  app.post(`${apiPrefix}/upload`, requireAdmin, upload.single('image'), (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+      
+      // Return the URL of the uploaded file
+      const fileUrl = `/uploads/${req.file.filename}`;
+      res.json({ url: fileUrl });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      res.status(500).json({ message: "Error uploading file" });
+    }
+  });
+
+  app.delete(`${apiPrefix}/orders/:id`, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deletedOrder = await storageService.deleteOrder(id);
+      if (!deletedOrder) {
+        return res.status(404).json({ message: "Commande non trouvée" });
+      }
+      res.json({ message: "Commande supprimée avec succès" });
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      res.status(500).json({ message: "Erreur lors de la suppression de la commande" });
+    }
+  });
+
+  // --- Wishlist Endpoints ---
+
+  // Get wishlist for logged-in user
+  app.get('/api/wishlist', async (req, res) => {
+    const userId = (req.session as CustomSession)?.user?.id;
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const wishlist = await db.query.wishlists.findMany({
+      where: eq(schema.wishlists.userId, userId),
+      with: { product: true }
+    });
+    res.json(wishlist);
+  });
+
+  // Add to wishlist
+  app.post('/api/wishlist', async (req, res) => {
+    const userId = (req.session as CustomSession)?.user?.id;
+    const { productId } = req.body;
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    await db.insert(schema.wishlists).values({ userId, productId });
+    res.status(201).json({ message: "Added to wishlist" });
+  });
+
+  // Remove from wishlist
+  app.delete('/api/wishlist/:productId', async (req, res) => {
+    const userId = (req.session as CustomSession)?.user?.id;
+    const productId = parseInt(req.params.productId);
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    await db.delete(schema.wishlists).where(
+      and(eq(schema.wishlists.userId, userId), eq(schema.wishlists.productId, productId))
+    );
+    res.json({ message: "Removed from wishlist" });
+  });
+
+  // --- User Info Endpoints ---
+
+  // Get current user info
+  app.get('/api/me', async (req, res) => {
+    const userId = (req.session as CustomSession)?.user?.id;
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const user = await db.query.users.findFirst({ where: eq(schema.users.id, userId) });
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user);
+  });
+
+  // Update user info
+  app.put('/api/me', async (req, res) => {
+    const userId = (req.session as CustomSession)?.user?.id;
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const { username, fullname, phone, address, city, postalCode } = req.body;
+    await db.update(schema.users)
+      .set({ username, fullname, phone, address, city, postalCode })
+      .where(eq(schema.users.id, userId));
+    res.json({ message: "User info updated" });
+  });
+
+  // Update user password
+  app.put('/api/me-password', async (req, res) => {
+    try {
+      const session = req.session as CustomSession;
+      if (!session?.user?.id) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { currentPassword, newPassword } = req.body;
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: "Les deux mots de passe sont requis" });
+      }
+
+      // Get user with current password
+      const user = await db.query.users.findFirst({ 
+        where: eq(schema.users.id, session.user.id)
+      });
+      
+      if (!user) {
+        return res.status(404).json({ error: "Utilisateur non trouvé" });
+      }
+
+      // Verify current password
+      const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isPasswordValid) {
+        return res.status(400).json({ error: "Mot de passe actuel incorrect" });
+      }
+
+      // Check if new password is same as current
+      if (currentPassword === newPassword) {
+        return res.status(400).json({ error: "Le nouveau mot de passe doit être différent de l'ancien" });
+      }
+
+      // Hash and update new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await db.update(schema.users)
+        .set({ password: hashedPassword })
+        .where(eq(schema.users.id, session.user.id));
+
+      res.json({ message: "Mot de passe mis à jour avec succès" });
+    } catch (error) {
+      console.error("Error updating password:", error);
+      res.status(500).json({ error: "Erreur lors de la mise à jour du mot de passe" });
+    }
+  });
+
+  // --- Order History Endpoint ---
+
+  // Get orders for current user
+  app.get('/api/my-orders', async (req, res) => {
+    const userId = (req.session as CustomSession)?.user?.id;
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const user = await db.query.users.findFirst({ where: eq(schema.users.id, userId) });
+    if (!user) return res.status(404).json({ message: "User not found" });
+    // Fetch orders by customerEmail = user.email, and include items and product details
+    const orders = await db.query.orders.findMany({
+      where: eq(schema.orders.customerEmail, user.email),
+      with: {
+        items: {
+          with: {
+            product: true
+          }
+        }
+      },
+      orderBy: desc(schema.orders.createdAt)
+    });
+    res.json(orders);
+  });
+
+  // General authentication check for any logged-in user
+  app.get('/api/check', (req, res) => {
+    if ((req.session as CustomSession)?.user) {
+      return res.json({ authenticated: true, user: (req.session as CustomSession).user });
+    }
+    res.json({ authenticated: false });
+  });
+
+  // --- Messages endpoints ---
+  app.post(`${apiPrefix}/messages`, async (req, res) => {
+    try {
+      const { name, email, subject, message } = req.body;
+      // Validate
+      const validData = schema.messagesInsertSchema.parse({ name, email, subject, message });
+      const saved = await storageService.createMessage(validData);
+      res.status(201).json(saved);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      const errMsg = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ message: errMsg || "Erreur lors de l'envoi du message" });
+    }
+  });
+
+  app.get(`${apiPrefix}/messages`, requireAdmin, async (req, res) => {
+    try {
+      const messages = await storageService.getAllMessages();
+      res.json(messages);
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ message: errMsg || "Erreur lors de la récupération des messages" });
+    }
+  });
+
+  app.delete(`${apiPrefix}/messages/:id`, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ message: "ID invalide" });
+      const deleted = await storageService.deleteMessage(id);
+      if (!deleted) return res.status(404).json({ message: "Message non trouvé" });
+      res.json({ success: true });
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      res.status(500).json({ message: errMsg || "Erreur lors de la suppression du message" });
     }
   });
 

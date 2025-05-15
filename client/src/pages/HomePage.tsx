@@ -9,7 +9,7 @@ import CallToAction from "@/components/home/CallToAction";
 export default function HomePage() {
   // Set page title
   React.useEffect(() => {
-    document.title = "LOST & FOUND | Streetwear";
+    document.title = "L&F Vision";
   }, []);
   
   return (

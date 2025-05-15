@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -37,11 +37,15 @@ interface CategoryFormProps {
 export default function CategoryForm({ category, onClose }: CategoryFormProps) {
   const { toast } = useToast();
   const [isGeneratingSlug, setIsGeneratingSlug] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(category?.backgroundImageUrl || null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Prepare default values
   const defaultValues: Partial<CategoryFormValues> = category
     ? {
         ...category,
+        description: category.description || "",
       }
     : {
         name: "",
@@ -54,6 +58,11 @@ export default function CategoryForm({ category, onClose }: CategoryFormProps) {
     resolver: zodResolver(categorySchema),
     defaultValues,
   });
+  
+  // Reset form when switching between edit/create
+  useEffect(() => {
+    form.reset(defaultValues);
+  }, [category]);
   
   // Watch name to generate slug
   const watchedName = form.watch("name");
@@ -70,13 +79,56 @@ export default function CategoryForm({ category, onClose }: CategoryFormProps) {
 
   // Create/Update category mutation
   const categoryMutation = useMutation({
-    mutationFn: async (data: CategoryFormValues) => {
-      if (category) {
-        // Update existing category
-        return apiRequest('PUT', `/api/categories/${category.id}`, data);
-      } else {
-        // Create new category
-        return apiRequest('POST', '/api/categories', data);
+    mutationFn: async (data: any) => {
+      try {
+        let payload;
+        if (selectedFile) {
+          // If there's a new file, use FormData
+          payload = new FormData();
+          // Always include all fields for update
+          payload.append("name", data.name);
+          payload.append("slug", data.slug);
+          payload.append("description", data.description || "");
+          payload.append("backgroundImage", selectedFile);
+          if (category?.backgroundImageUrl) {
+            payload.append("backgroundImageUrl", category.backgroundImageUrl);
+          }
+        } else {
+          // If no new file, include all fields
+          payload = {
+            name: data.name,
+            slug: data.slug,
+            description: data.description || "",
+            backgroundImageUrl: category?.backgroundImageUrl || null
+          };
+        }
+        
+        if (category) {
+          // Update existing category
+          return await apiRequest('PUT', `/api/categories/${category.id}`, payload);
+        } else {
+          // Create new category - send all fields
+          if (selectedFile) {
+            const formData = new FormData();
+            formData.append("name", data.name);
+            formData.append("slug", data.slug);
+            formData.append("description", data.description || "");
+            formData.append("backgroundImage", selectedFile);
+            return await apiRequest('POST', '/api/categories', formData);
+          } else {
+            return await apiRequest('POST', '/api/categories', {
+              name: data.name,
+              slug: data.slug,
+              description: data.description || "",
+            });
+          }
+        }
+      } catch (error: any) {
+        console.error("Category mutation error:", error);
+        if (error.response?.status === 409) {
+          throw new Error("Une catégorie avec ce nom ou ce slug existe déjà.");
+        }
+        throw error;
       }
     },
     onSuccess: () => {
@@ -91,12 +143,11 @@ export default function CategoryForm({ category, onClose }: CategoryFormProps) {
       
       onClose();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Category mutation error:", error);
-      
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue. Veuillez réessayer.",
+        description: error.details || error.message || "Une erreur est survenue. Veuillez réessayer.",
         variant: "destructive",
       });
     },
@@ -104,6 +155,19 @@ export default function CategoryForm({ category, onClose }: CategoryFormProps) {
 
   const onSubmit = (data: CategoryFormValues) => {
     categoryMutation.mutate(data);
+  };
+
+  // Handle file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -134,7 +198,7 @@ export default function CategoryForm({ category, onClose }: CategoryFormProps) {
                   <Input placeholder="hoodies" {...field} />
                 </FormControl>
                 <FormDescription>
-                  Identifiant unique pour l'URL de la catégorie
+                  Identifiant unique pour l'URL de la catégorie. Doit être unique.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -169,6 +233,40 @@ export default function CategoryForm({ category, onClose }: CategoryFormProps) {
             </FormItem>
           )}
         />
+        
+        {/* Background image upload */}
+        <div>
+          <FormLabel>Image de fond (optionnelle)</FormLabel>
+          <div className="flex items-center gap-4 mt-2">
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {selectedFile ? "Changer l'image" : "Choisir une image"}
+            </Button>
+            {selectedFile && (
+              <span className="text-sm text-gray-600 truncate max-w-[180px]">{selectedFile.name}</span>
+            )}
+          </div>
+          {imagePreview && (
+            <div className="mt-2">
+              <img src={imagePreview} alt="Aperçu" className="h-32 rounded shadow" />
+            </div>
+          )}
+          {category?.backgroundImageUrl && !imagePreview && (
+            <div className="mt-2">
+              <img src={category.backgroundImageUrl} alt="Aperçu" className="h-32 rounded shadow" />
+            </div>
+          )}
+        </div>
         
         {/* Form actions */}
         <div className="flex justify-end gap-3">

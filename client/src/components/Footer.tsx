@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "wouter";
 import { ShopLogo } from "@/components/ui/shop-logo";
-import { Facebook, Instagram, Twitter, MapPin, Phone, Mail } from "lucide-react";
+import { Facebook, Instagram, MapPin, Phone, Mail, HelpCircle, Truck, RotateCcw, Ruler, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -45,112 +45,88 @@ export default function Footer() {
   return (
     <footer className="bg-primary text-white pt-16 pb-6">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-          <div>
-            <h3 className="text-xl font-bold font-montserrat mb-4">
-              <ShopLogo className="h-8 w-auto" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          <div className="p-6 rounded-lg backdrop-blur-sm">
+            <h3 className="text-xl font-bold font-montserrat mb-4 text-left">
+              <ShopLogo className="h-8 w-auto mx-auto" />
             </h3>
             <p className="text-neutral-400 mb-4">
               Votre destination streetwear authentique pour exprimer votre style unique.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex justify-center space-x-6 mt-4">
               <a href="#" className="text-neutral-400 hover:text-white transition-colors">
                 <Facebook size={20} />
               </a>
-              <a href="#" className="text-neutral-400 hover:text-white transition-colors">
+              <a href="https://instagram.com/lostandfound_vision" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white transition-colors">
                 <Instagram size={20} />
-              </a>
-              <a href="#" className="text-neutral-400 hover:text-white transition-colors">
-                <Twitter size={20} />
               </a>
             </div>
           </div>
 
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Liens Rapides</h4>
+          <div className="p-6 rounded-lg backdrop-blur-sm">
+            <h4 className="text-lg font-semibold mb-4 text-left">Aide & Support</h4>
             <ul className="space-y-2 text-neutral-400">
-              <li>
-                <Link href="/">
-                  <a className="hover:text-white transition-colors">Accueil</a>
-                </Link>
-              </li>
-              <li>
-                <Link href="/products/hoodie">
-                  <a className="hover:text-white transition-colors">Hoodies</a>
-                </Link>
-              </li>
-              <li>
-                <Link href="/products/tshirt">
-                  <a className="hover:text-white transition-colors">T-Shirts</a>
-                </Link>
-              </li>
-              <li>
-                <Link href="/products">
-                  <a className="hover:text-white transition-colors">Promotions</a>
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Aide & Support</h4>
-            <ul className="space-y-2 text-neutral-400">
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
+              <li className="flex items-start">
+                <HelpCircle className="mt-1 mr-3 h-4 w-4" />
+                <Link href="/support/faq" className="hover:text-white transition-colors">
                   FAQ
-                </a>
+                </Link>
               </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
+              <li className="flex items-start">
+                <Truck className="mt-1 mr-3 h-4 w-4" />
+                <Link href="/support/livraison" className="hover:text-white transition-colors">
                   Livraison
-                </a>
+                </Link>
               </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
+              <li className="flex items-start">
+                <RotateCcw className="mt-1 mr-3 h-4 w-4" />
+                <Link href="/support/retours" className="hover:text-white transition-colors">
                   Retours
-                </a>
+                </Link>
               </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
+              <li className="flex items-start">
+                <Ruler className="mt-1 mr-3 h-4 w-4" />
+                <Link href="/support/tailles" className="hover:text-white transition-colors">
                   Tailles
-                </a>
+                </Link>
               </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
+              <li className="flex items-start">
+                <MessageCircle className="mt-1 mr-3 h-4 w-4" />
+                <Link href="/support/contact" className="hover:text-white transition-colors">
                   Contact
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
 
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Contact</h4>
+          <div className="p-6 rounded-lg backdrop-blur-sm">
+            <h4 className="text-lg font-semibold mb-4 text-left">Contact</h4>
             <ul className="space-y-2 text-neutral-400">
               <li className="flex items-start">
                 <MapPin className="mt-1 mr-3 h-4 w-4" />
-                <span>123 Rue de la Mode, Casablanca, Maroc</span>
+                <span>Settat, Maroc</span>
               </li>
               <li className="flex items-start">
                 <Phone className="mt-1 mr-3 h-4 w-4" />
-                <span>+212 5XX XX XX XX</span>
+                <span>+212 642 05 78 69</span>
               </li>
               <li className="flex items-start">
                 <Mail className="mt-1 mr-3 h-4 w-4" />
-                <span>info@lostandfound.ma</span>
+                <span>support@lostandfound.ma</span>
               </li>
             </ul>
           </div>
         </div>
 
         <div className="pt-8 border-t border-neutral-800 text-sm text-neutral-500 flex flex-col md:flex-row justify-between items-center">
-          <p>© 2023 LOST & FOUND. Tous droits réservés.</p>
+          <p>© 2025 LOST & FOUND. Tous droits réservés.</p>
           <div className="flex flex-wrap justify-center mt-4 md:mt-0">
-            <a href="#" className="mr-6 hover:text-white transition-colors">
+            <Link href="/terms" className="mr-6 hover:text-white transition-colors">
               Conditions d'utilisation
-            </a>
-            <a href="#" className="mr-6 hover:text-white transition-colors">
+            </Link>
+            <Link href="/privacy" className="mr-6 hover:text-white transition-colors">
               Politique de confidentialité
-            </a>
+            </Link>
             <div className="flex items-center mt-2 md:mt-0">
               <span className="mr-2">Paiement sécurisé:</span>
               <svg className="h-6 w-6 mx-1" viewBox="0 0 24 24" fill="currentColor">

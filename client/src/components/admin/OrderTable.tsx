@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
   Table, 
@@ -12,7 +12,8 @@ import {
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle 
+  DialogTitle,
+  DialogDescription
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { 
@@ -33,7 +34,7 @@ import { Separator } from "@/components/ui/separator";
 import { formatPrice } from "@/lib/utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, ChevronRight, Eye, RefreshCw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, RefreshCw, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 
 interface OrderTableProps {
   orders: any[];
@@ -43,12 +44,52 @@ export default function OrderTable({ orders }: OrderTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<any | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [localOrders, setLocalOrders] = useState(orders);
   const itemsPerPage = 10;
   const { toast } = useToast();
+  const [sortBy, setSortBy] = useState<string>("createdAt");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
-  // Pagination
-  const totalPages = Math.ceil(orders.length / itemsPerPage);
-  const paginatedOrders = orders.slice(
+  useEffect(() => {
+    setLocalOrders(orders);
+  }, [orders]);
+
+  // Sort orders oldest first
+  const sortedOrders = [...localOrders].sort((a, b) => {
+    let aVal = a[sortBy];
+    let bVal = b[sortBy];
+    if (sortBy === "customerName") {
+      aVal = a.customerName?.toLowerCase() || "";
+      bVal = b.customerName?.toLowerCase() || "";
+    }
+    if (sortBy === "customerEmail") {
+      aVal = a.customerEmail?.toLowerCase() || "";
+      bVal = b.customerEmail?.toLowerCase() || "";
+    }
+    if (sortBy === "total") {
+      aVal = Number(a.total);
+      bVal = Number(b.total);
+    }
+    if (sortBy === "createdAt") {
+      aVal = new Date(a.createdAt).getTime();
+      bVal = new Date(b.createdAt).getTime();
+    }
+    if (sortBy === "status") {
+      aVal = a.status || "";
+      bVal = b.status || "";
+    }
+    if (sortBy === "paymentMethod") {
+      aVal = a.paymentMethod || "";
+      bVal = b.paymentMethod || "";
+    }
+    if (aVal < bVal) return sortDir === "asc" ? -1 : 1;
+    if (aVal > bVal) return sortDir === "asc" ? 1 : -1;
+    return 0;
+  });
+  const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
+  const paginatedOrders = sortedOrders.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -56,23 +97,54 @@ export default function OrderTable({ orders }: OrderTableProps) {
   // Update order status mutation
   const statusMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: number, status: string }) => {
-      return await apiRequest('PUT', `/api/orders/${orderId}/status`, { status });
+      const response = await apiRequest('PUT', `/api/orders/${orderId}/status`, { status });
+      return response;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Update the local order data
+      setSelectedOrder((prev: any) => prev ? { ...prev, status: data.status } : null);
+      // Invalidate and refetch orders
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       toast({
         title: "Statut mis à jour",
         description: "Le statut de la commande a été mis à jour avec succès.",
       });
     },
-    onError: (error) => {
-      console.error("Error updating order status:", error);
+    onError: (error: any) => {
+      console.error("Order status update error details:", error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour du statut.",
+        description: (error.details || error.message) ?? "Une erreur est survenue lors de la mise à jour du statut.",
         variant: "destructive",
       });
     }
+  });
+
+  // Delete order mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (orderId: number) => {
+      const response = await apiRequest('DELETE', `/api/orders/${orderId}`);
+      if (response && response.message === "Commande supprimée avec succès") {
+        return true;
+      }
+      throw new Error(response?.message || 'Erreur lors de la suppression de la commande');
+    },
+    onSuccess: (_, orderId) => {
+      setLocalOrders((prev: any[]) => prev.filter((o: any) => o.id !== orderId));
+      toast({
+        title: 'Commande supprimée',
+        description: 'La commande a été supprimée avec succès.',
+      });
+      setIsDeleteDialogOpen(false);
+      setOrderToDelete(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Une erreur est survenue lors de la suppression.',
+        variant: 'destructive',
+      });
+    },
   });
 
   // Fetch order details
@@ -124,53 +196,80 @@ export default function OrderTable({ orders }: OrderTableProps) {
     }
   };
 
+  // In the JSX for the order details dialog, replace all uses of selectedOrder.items with order.items, where:
+  const order = orderDetails || selectedOrder;
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortDir(sortDir === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(column);
+      setSortDir("asc");
+    }
+  };
+
   return (
     <>
       <div className="bg-white rounded-md shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[80px]">ID</TableHead>
-              <TableHead>Client</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Total</TableHead>
-              <TableHead>Statut</TableHead>
-              <TableHead>Paiement</TableHead>
+              <TableHead className="w-[80px] cursor-pointer select-none" onClick={() => handleSort("id")}>ID {sortBy === "id" && (sortDir === "asc" ? <ChevronUp className="inline h-4 w-4" /> : <ChevronDown className="inline h-4 w-4" />)}</TableHead>
+              <TableHead className="cursor-pointer select-none" onClick={() => handleSort("customerName")}>Client {sortBy === "customerName" && (sortDir === "asc" ? <ChevronUp className="inline h-4 w-4" /> : <ChevronDown className="inline h-4 w-4" />)}</TableHead>
+              <TableHead className="cursor-pointer select-none" onClick={() => handleSort("createdAt")}>Date {sortBy === "createdAt" && (sortDir === "asc" ? <ChevronUp className="inline h-4 w-4" /> : <ChevronDown className="inline h-4 w-4" />)}</TableHead>
+              <TableHead className="cursor-pointer select-none" onClick={() => handleSort("total")}>Total {sortBy === "total" && (sortDir === "asc" ? <ChevronUp className="inline h-4 w-4" /> : <ChevronDown className="inline h-4 w-4" />)}</TableHead>
+              <TableHead className="cursor-pointer select-none" onClick={() => handleSort("status")}>Statut {sortBy === "status" && (sortDir === "asc" ? <ChevronUp className="inline h-4 w-4" /> : <ChevronDown className="inline h-4 w-4" />)}</TableHead>
+              <TableHead className="cursor-pointer select-none" onClick={() => handleSort("paymentMethod")}>Paiement {sortBy === "paymentMethod" && (sortDir === "asc" ? <ChevronUp className="inline h-4 w-4" /> : <ChevronDown className="inline h-4 w-4" />)}</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedOrders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell className="font-medium">#{order.id}</TableCell>
-                <TableCell>
-                  <div>
-                    <div className="font-medium">{order.customerName}</div>
-                    <div className="text-sm text-muted-foreground">{order.customerEmail}</div>
-                  </div>
-                </TableCell>
-                <TableCell>{formatDate(order.createdAt)}</TableCell>
-                <TableCell>{formatPrice(order.total)}</TableCell>
-                <TableCell>
-                  {getStatusBadge(order.status)}
-                </TableCell>
-                <TableCell>
-                  {order.paymentMethod === 'cash_on_delivery' ? 'À la livraison' : 'Carte bancaire'}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleViewOrder(order)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      Voir
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+            {paginatedOrders.map((order, idx) => {
+              // Friendly display index: 1 for top, 2 for next, etc.
+              const displayIndex = (currentPage - 1) * itemsPerPage + idx + 1;
+              return (
+                <TableRow key={order.id}>
+                  <TableCell className="font-medium">#{displayIndex}</TableCell>
+                  <TableCell>
+                    <div>
+                      <div className="font-medium">{order.customerName}</div>
+                      <div className="text-sm text-muted-foreground">{order.customerEmail}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{formatDate(order.createdAt)}</TableCell>
+                  <TableCell>{formatPrice(order.total)}</TableCell>
+                  <TableCell>
+                    {getStatusBadge(order.status)}
+                  </TableCell>
+                  <TableCell>
+                    {order.paymentMethod === 'cash_on_delivery' ? 'À la livraison' : 'Carte bancaire'}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewOrder(order)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Voir
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          setOrderToDelete(order);
+                          setIsDeleteDialogOpen(true);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Supprimer
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
 
@@ -233,11 +332,26 @@ export default function OrderTable({ orders }: OrderTableProps) {
       <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
         <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Détails de la commande #{selectedOrder?.id}</DialogTitle>
+            <DialogTitle>
+              Détails de la commande #
+              {(() => {
+                if (!selectedOrder) return '';
+                // Sort orders by creation date (oldest first)
+                const sorted = [...orders].sort(
+                  (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                );
+                // Find the index of the selected order
+                const idx = sorted.findIndex(o => o.id === selectedOrder.id);
+                return idx >= 0 ? idx + 1 : selectedOrder.id;
+              })()}
+            </DialogTitle>
+            <DialogDescription>
+              Détails et actions pour cette commande.
+            </DialogDescription>
           </DialogHeader>
           
           {selectedOrder && (
-            <div className="space-y-6">
+            <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
               {/* Order Status */}
               <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                 <div>
@@ -284,7 +398,6 @@ export default function OrderTable({ orders }: OrderTableProps) {
                       <p className="text-sm">{selectedOrder.customerEmail}</p>
                       <p className="text-sm">{selectedOrder.customerPhone}</p>
                     </div>
-                    
                     <div>
                       <p className="text-sm font-medium mb-1">Adresse de livraison</p>
                       <p className="text-sm">{selectedOrder.shippingAddress}</p>
@@ -292,43 +405,51 @@ export default function OrderTable({ orders }: OrderTableProps) {
                     </div>
                   </CardContent>
                 </Card>
-                
-                {/* Order summary */}
+                {/* Order summary and payment */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Résumé de la commande</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex justify-between">
-                      <span className="text-sm">Mode de paiement:</span>
+                      <span className="text-sm">Produits:</span>
                       <span className="text-sm font-medium">
-                        {selectedOrder.paymentMethod === 'cash_on_delivery' ? 'Paiement à la livraison' : 'Carte bancaire'}
+                        {formatPrice(
+                          (order.items?.reduce(
+                            (sum: number, item: any) => sum + (item.price * item.quantity),
+                            0
+                          )) || 0
+                        )}
                       </span>
                     </div>
-                    
                     <div className="flex justify-between">
                       <span className="text-sm">Livraison:</span>
                       <span className="text-sm font-medium">
-                        {selectedOrder.freeShipping ? (
+                        {order.free_shipping ? (
                           <span className="text-green-600">Gratuite</span>
                         ) : (
                           '50 MAD'
                         )}
                       </span>
                     </div>
-                    
-                    {selectedOrder.promoApplied && (
+                    {order.promoApplied && (
                       <div className="flex justify-between">
                         <span className="text-sm">Promotion appliquée:</span>
                         <span className="text-sm font-medium text-green-600">Oui</span>
                       </div>
                     )}
-                    
                     <Separator />
-                    
                     <div className="flex justify-between">
                       <span className="font-medium">Total:</span>
-                      <span className="font-bold">{formatPrice(selectedOrder.total)}</span>
+                      <span className="font-bold">{formatPrice(order.total)}</span>
+                    </div>
+                    {/* Payment method section */}
+                    <Separator />
+                    <div>
+                      <span className="font-medium">Méthode de paiement:</span>
+                      <span className="ml-2">
+                        {selectedOrder.paymentMethod === 'credit_card' ? 'Carte bancaire' : 'À la livraison'}
+                      </span>
                     </div>
                   </CardContent>
                 </Card>
@@ -340,69 +461,62 @@ export default function OrderTable({ orders }: OrderTableProps) {
                   <CardTitle className="text-lg">Articles commandés</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {isLoadingDetails ? (
-                    <div className="text-center py-4">
-                      <RefreshCw className="h-6 w-6 animate-spin mx-auto" />
-                      <p className="mt-2 text-sm text-muted-foreground">Chargement des articles...</p>
-                    </div>
-                  ) : orderDetails?.items?.length > 0 ? (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Produit</TableHead>
-                          <TableHead>Taille</TableHead>
-                          <TableHead>Quantité</TableHead>
-                          <TableHead>Prix unitaire</TableHead>
-                          <TableHead className="text-right">Total</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {orderDetails.items.map((item: any) => (
-                          <TableRow key={item.id}>
-                            <TableCell>
-                              <div className="flex items-center gap-3">
+                  <div className="space-y-4">
+                    {(order?.items?.length === 0 || !order?.items) && (
+                      <div className="text-center py-4 text-muted-foreground">Aucun article dans cette commande</div>
+                    )}
+                    {order?.items?.map((item: any) => (
+                      <div key={`${item.productId}-${item.size}`} className="flex items-center gap-4">
                                 <img 
-                                  src={item.product.imageUrl} 
-                                  alt={item.product.name} 
-                                  className="w-12 h-12 object-cover rounded"
+                          src={item.product?.image ? `/uploads/${item.product.image}` : undefined}
+                          alt={item.product?.name}
+                          className="w-16 h-16 object-cover rounded-md"
                                 />
-                                <div>
-                                  <p className="font-medium">{item.product.name}</p>
-                                  <p className="text-xs text-muted-foreground capitalize">
-                                    {item.product.category}
+                        <div className="flex-grow">
+                          <p className="font-medium">{item.product?.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Taille: {item.size} | Quantité: {item.quantity}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">{formatPrice(item.price * item.quantity)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {formatPrice(item.price)} × {item.quantity}
                                   </p>
                                 </div>
                               </div>
-                            </TableCell>
-                            <TableCell>{item.size}</TableCell>
-                            <TableCell>{item.quantity}</TableCell>
-                            <TableCell>
-                              {item.isFree ? (
-                                <span className="text-accent font-medium">GRATUIT</span>
-                              ) : (
-                                formatPrice(item.price)
-                              )}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {item.isFree ? (
-                                <span className="text-accent font-medium">GRATUIT</span>
-                              ) : (
-                                formatPrice(item.price * item.quantity)
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  ) : (
-                    <div className="text-center py-4">
-                      <p className="text-muted-foreground">Aucun article trouvé pour cette commande.</p>
+                    ))}
                     </div>
-                  )}
                 </CardContent>
               </Card>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Supprimer la commande</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir supprimer cette commande ? Cette action est irréversible.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (orderToDelete) deleteMutation.mutate(orderToDelete.id);
+              }}
+              disabled={deleteMutation.isPending}
+            >
+              Supprimer
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>

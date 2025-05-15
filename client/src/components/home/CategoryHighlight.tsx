@@ -41,14 +41,14 @@ export default function CategoryHighlight() {
             <CategoryCard
               title="Hoodies"
               description="À partir de 199 MAD"
-              imageUrl="https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&h=800"
-              slug="hoodie"
+              imageUrl="/hoodie.jpg"
+              slug="hoodies"
             />
             <CategoryCard
               title="T-Shirts"
               description="À partir de 120 MAD"
-              imageUrl="https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=800&h=800"
-              slug="tshirt"
+              imageUrl="/tshirt.jpg"
+              slug="tshirts"
             />
           </div>
         </div>
@@ -65,22 +65,24 @@ export default function CategoryHighlight() {
         <p className="text-neutral-700 text-center mb-12">
           Explorez notre collection de vêtements streetwear de qualité supérieure
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {categories.map((category: any) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {(Array.isArray(categories) ? categories : []).map((category: any) => (
             <CategoryCard
               key={category.id}
               title={category.name}
               description={
-                category.slug === "hoodies" 
-                  ? "À partir de 199 MAD" 
+                category.slug === "hoodies"
+                  ? "À partir de 199 MAD"
                   : "À partir de 120 MAD"
               }
               imageUrl={
-                category.slug === "hoodies"
-                  ? "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&h=800"
-                  : "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=800&h=800"
+                category.backgroundImageUrl
+                  ? category.backgroundImageUrl
+                  : category.slug === "hoodies"
+                    ? "/hoodie.jpg"
+                    : "/tshirt.jpg"
               }
-              slug={category.slug}
+              slug={category.name.toLowerCase().replace(/\s|-/g, "") === "tshirts" ? "tshirts" : category.slug}
             />
           ))}
         </div>

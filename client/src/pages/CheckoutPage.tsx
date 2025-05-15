@@ -4,7 +4,7 @@ import MainLayout from "@/layouts/MainLayout";
 import CheckoutForm from "@/components/checkout/CheckoutForm";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/utils";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Truck } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export default function CheckoutPage() {
@@ -59,8 +59,14 @@ export default function CheckoutPage() {
                 {/* Cart items */}
                 <div className="space-y-4 mb-6">
                   {cartItems.map((item) => (
-                    <div key={`${item.productId}-${item.size}`} className="flex justify-between">
-                      <div>
+                    <div key={`${item.productId}-${item.size}`} className="flex items-center justify-between gap-3">
+                      <img
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className="w-16 h-16 object-cover rounded"
+                        style={{ minWidth: 64, minHeight: 64 }}
+                      />
+                      <div className="flex-1">
                         <p className="font-medium">{item.name}</p>
                         <p className="text-sm text-gray-500">
                           Taille: {item.size} | Qté: {item.quantity}
@@ -95,6 +101,19 @@ export default function CheckoutPage() {
                   )}
                 </div>
                 
+                {/* Delivery estimation */}
+                <div className="flex items-start gap-2 mt-2 text-sm text-gray-600">
+                  <Truck className="h-4 w-4 text-accent mt-1" />
+                  <div>
+                    <span className="font-semibold">Délais de Livraison</span>
+                    <ul className="list-disc ml-5 mt-1">
+                      <li>Settat : 1-2 jours ouvrables</li>
+                      <li>Grandes villes : 2-3 jours ouvrables</li>
+                      <li>Autres régions : 3-5 jours ouvrables</li>
+                    </ul>
+                  </div>
+                </div>
+                
                 <Separator className="my-4" />
                 
                 {/* Total */}
@@ -118,9 +137,9 @@ export default function CheckoutPage() {
                 
                 {/* Free shipping note */}
                 {freeShipping && (
-                  <div className="bg-accent bg-opacity-10 text-accent p-3 text-sm rounded mt-2">
-                    <p className="font-medium">✓ Livraison gratuite</p>
-                    <p className="text-xs mt-1">
+                  <div className="bg-accent bg-opacity-100 p-3 rounded mt-2">
+                    <p className="font-bold text-white">✓ Livraison gratuite</p>
+                    <p className="font-bold text-white text-xs mt-1">
                       Pour toute commande supérieure à 500 MAD
                     </p>
                   </div>

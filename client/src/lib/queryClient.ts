@@ -1,26 +1,60 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
-async function throwIfResNotOk(res: Response) {
+export async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    let errorData;
+    try {
+      errorData = await res.json();
+    } catch (err) {
+      // If response is not JSON, use status text as error message
+      errorData = { message: res.statusText };
+    }
+    const errorMessage = errorData.message || res.statusText;
+    const error = new Error(`${res.status}: ${JSON.stringify(errorData)}`) as any;
+    error.status = res.status;
+    error.message = errorMessage;
+    error.details = errorData.details;
+    error.data = errorData;
+    throw error;
   }
 }
 
-export async function apiRequest(
-  method: string,
-  url: string,
-  data?: unknown | undefined,
-): Promise<Response> {
-  const res = await fetch(url, {
+export async function apiRequest(method: 'GET' | 'POST' | 'PUT' | 'DELETE', url: string, data?: any) {
+  const options: RequestInit = {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+    credentials: 'include',
+    headers: {},
+  };
 
+  if (data && method !== 'GET') {
+    if (data instanceof FormData) {
+      options.body = data;
+      // Do not set Content-Type, browser will handle it
+    } else {
+      options.body = JSON.stringify(data);
+      options.headers = { 'Content-Type': 'application/json' };
+    }
+  }
+
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}${url}`, options);
   await throwIfResNotOk(res);
-  return res;
+    
+    // For DELETE requests that return 204 No Content
+    if (res.status === 204) {
+      return null;
+    }
+    
+    try {
+    return await res.json();
+    } catch (err) {
+      // If response is not JSON but request was successful, return null
+      return null;
+    }
+  } catch (error) {
+    console.error(`API ${method} request failed:`, error);
+    throw error;
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

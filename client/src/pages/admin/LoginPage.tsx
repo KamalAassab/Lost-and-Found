@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { ShopLogo } from "@/components/ui/shop-logo";
 import { useAuth } from "@/context/AuthContext";
 
@@ -21,16 +21,21 @@ export default function LoginPage() {
   const [, navigate] = useLocation();
   const { login, user, isLoading } = useAuth();
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Set page title
   useEffect(() => {
-    document.title = "Connexion Admin | LOST & FOUND";
+    document.title = "Connexion | LOST & FOUND";
   }, []);
 
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate("/admin/dashboard");
+      if (user.isAdmin) {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/account");
+      }
     }
   }, [user, navigate]);
 
@@ -45,12 +50,8 @@ export default function LoginPage() {
 
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     setLoginError(null);
-    
-    const success = await login(values.username, values.password);
-    
-    if (success) {
-      navigate("/admin/dashboard");
-    }
+    await login(values.username, values.password);
+    // Redirect logic removed from here; handled by useEffect
   };
 
   if (user || isLoading) {
@@ -62,17 +63,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center p-4">
-      <div className="max-w-md w-full">
-        <div className="flex justify-center mb-6">
-          <ShopLogo className="h-12 w-auto text-primary" />
+    <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center p-0">
+      {/* Full-width, full-black header with no margins or padding */}
+      <div className="fixed top-0 left-0 w-full flex justify-center items-center bg-black z-10" style={{height: '110px'}}>
+          <Link href="/">
+          <ShopLogo className="h-20 w-auto text-white mx-auto" />
+          </Link>
         </div>
-
+      <div className="max-w-md w-full pt-[130px]">
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Administration</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">Connexion</CardTitle>
             <CardDescription className="text-center">
-              Connectez-vous à votre compte admin
+              Connectez-vous à votre compte
             </CardDescription>
           </CardHeader>
           
@@ -87,7 +90,7 @@ export default function LoginPage() {
                       <FormLabel>Nom d'utilisateur</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="admin" 
+                          placeholder="Nom d'utilisateur" 
                           {...field} 
                           disabled={form.formState.isSubmitting}
                         />
@@ -104,12 +107,21 @@ export default function LoginPage() {
                     <FormItem>
                       <FormLabel>Mot de passe</FormLabel>
                       <FormControl>
+                        <div className="relative">
                         <Input 
-                          type="password" 
+                            type={showPassword ? "text" : "password"}
                           placeholder="••••••••" 
                           {...field} 
-                          disabled={form.formState.isSubmitting}
-                        />
+                          />
+                          <button
+                            type="button"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                            tabIndex={-1}
+                            onClick={() => setShowPassword((v) => !v)}
+                          >
+                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                          </button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -136,13 +148,22 @@ export default function LoginPage() {
                 </Button>
               </form>
             </Form>
+            <div className="w-full text-center text-sm mt-2">
+              <Link href="/recover" className="text-primary hover:underline">
+                Mot de passe oublié ?
+              </Link>
+            </div>
           </CardContent>
           
           <CardFooter className="flex flex-col">
-            <p className="px-8 text-center text-sm text-muted-foreground mt-2">
-              En vous connectant, vous accédez au tableau de bord d'administration
-              pour gérer les produits, commandes et catégories.
-            </p>
+            <div className="mt-4 text-center">
+              <span className="text-sm text-muted-foreground">
+                Pas encore de compte ?{" "}
+                <Link href="/signup" className="text-primary hover:underline">
+                  Créer un compte
+                </Link>
+              </span>
+            </div>
           </CardFooter>
         </Card>
       </div>

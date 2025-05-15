@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, CreditCard, Truck } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 // Form schema
 const checkoutSchema = z.object({
@@ -50,6 +51,16 @@ const checkoutSchema = z.object({
   city: z.string().min(2, "La ville doit comporter au moins 2 caractères"),
   postalCode: z.string().min(5, "Le code postal doit comporter au moins 5 caractères"),
   paymentMethod: z.enum(["cash_on_delivery", "credit_card"]),
+  cardNumber: z.string().optional().refine(val => !val || /^\d{16}$/.test(val), {
+    message: "Le numéro de carte doit comporter 16 chiffres."
+  }),
+  expiryDate: z.string().optional().refine(val => !val || /^\d{4}-\d{2}$/.test(val), {
+    message: "Date d'expiration invalide."
+  }),
+  cvc: z.string().optional().refine(val => !val || /^\d{3}$/.test(val), {
+    message: "Le CVC doit comporter 3 chiffres."
+  }),
+  cardName: z.string().optional(),
 });
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>;
@@ -59,6 +70,22 @@ export default function CheckoutForm() {
   const { cartItems, clearCart } = useCart();
   const { toast } = useToast();
   const [paymentMethod, setPaymentMethod] = useState<"cash_on_delivery" | "credit_card">("cash_on_delivery");
+  const [cardType, setCardType] = useState<"visa" | "mastercard" | null>(null);
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+  const years = Array.from({ length: 11 }, (_, i) => currentYear + i);
+  const months = Array.from({ length: 12 }, (_, i) => {
+    const monthNum = i + 1;
+    return {
+      value: monthNum.toString().padStart(2, '0'),
+      label: monthNum.toString().padStart(2, '0'),
+    };
+  });
+  const [expiryMonth, setExpiryMonth] = useState('');
+  const [expiryYear, setExpiryYear] = useState(currentYear.toString());
+  const filteredMonths = months;
+  const { user } = useAuth();
 
   // Create form
   const form = useForm<CheckoutFormValues>({
@@ -73,6 +100,23 @@ export default function CheckoutForm() {
       paymentMethod: "cash_on_delivery",
     },
   });
+
+  // Pre-fill form with user info if signed in
+  useEffect(() => {
+    if (user) {
+      apiRequest("GET", "/api/me").then((userInfo) => {
+        form.reset({
+          customerName: userInfo.fullname || userInfo.username || "",
+          customerEmail: userInfo.email || "",
+          customerPhone: userInfo.phone || "",
+          shippingAddress: userInfo.address || "",
+          city: userInfo.city || "",
+          postalCode: userInfo.postalCode || "",
+          paymentMethod: "cash_on_delivery",
+        });
+      });
+    }
+  }, [user]);
 
   // Submit order mutation
   const orderMutation = useMutation({
@@ -92,14 +136,11 @@ export default function CheckoutForm() {
       
       return apiRequest('POST', '/api/orders', orderData);
     },
-    onSuccess: async (response) => {
-      const data = await response.json();
-      
+    onSuccess: async (data) => {
       toast({
         title: "Commande passée avec succès",
         description: "Merci pour votre achat!",
       });
-      
       // Navigate to success page
       navigate(`/success?order=${data.order.id}`);
     },
@@ -117,9 +158,27 @@ export default function CheckoutForm() {
   const onSubmit = (data: CheckoutFormValues) => {
     // Update payment method from tabs
     data.paymentMethod = paymentMethod;
-    
+    // For credit card, combine expiryMonth and expiryYear
+    if (paymentMethod === 'credit_card') {
+      if (!expiryMonth || !expiryYear) {
+        toast({ title: 'Erreur', description: 'Veuillez sélectionner le mois et l\'année d\'expiration.', variant: 'destructive' });
+        return;
+      }
+      data.expiryDate = `${expiryYear}-${expiryMonth}`;
+    }
     // Submit order
     orderMutation.mutate(data);
+  };
+
+  // Card type detection and formatting
+  const formatCardNumber = (value: string) => value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+    const raw = e.target.value.replace(/\D/g, '').slice(0, 16);
+    field.onChange(raw);
+    // Detect card type
+    if (/^4/.test(raw)) setCardType("visa");
+    else if (/^(5[1-5]|222[1-9]|22[3-9]\d|2[3-6]\d{2}|27[01]\d|2720)/.test(raw)) setCardType("mastercard");
+    else setCardType(null);
   };
 
   return (
@@ -265,26 +324,106 @@ export default function CheckoutForm() {
                   </div>
                   
                   <div className="grid grid-cols-1 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Numéro de carte</label>
-                      <Input placeholder="1234 5678 9012 3456" />
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="cardNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Numéro de carte</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                placeholder="1234 5678 9012 3456"
+                                maxLength={19}
+                                value={field.value ? formatCardNumber(field.value) : ""}
+                                onChange={e => handleCardNumberChange(e, field)}
+                                inputMode="numeric"
+                                className="pr-12"
+                              />
+                              {cardType === "visa" && (
+                                <img src="/visa.svg" alt="Visa" className="absolute right-3 top-1/2 -translate-y-1/2 h-6" />
+                              )}
+                              {cardType === "mastercard" && (
+                                <img src="/mastercard.svg" alt="Mastercard" className="absolute right-3 top-1/2 -translate-y-1/2 h-6" />
+                              )}
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Date d'expiration</label>
-                        <Input placeholder="MM/AA" />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">CVC</label>
-                        <Input placeholder="123" />
-                      </div>
-                    </div>
+                      <FormField
+                        control={form.control}
+                        name="expiryDate"
+                      render={() => (
+                          <FormItem>
+                            <FormLabel>Date d'expiration</FormLabel>
+                          <div className="flex gap-2">
+                            <div className="w-1/2">
+                              <select
+                                value={expiryMonth}
+                                onChange={e => setExpiryMonth(e.target.value)}
+                                required={paymentMethod === 'credit_card'}
+                                className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary text-base bg-white"
+                              >
+                                <option value="">Mois</option>
+                                {filteredMonths.map(m => (
+                                  <option key={m.value} value={m.value}>{m.label}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="w-1/2">
+                              <select
+                                value={expiryYear}
+                                onChange={e => {
+                                  setExpiryYear(e.target.value);
+                                  // Reset month if year changes
+                                  if (e.target.value !== currentYear.toString() && expiryMonth === '') {
+                                    setExpiryMonth('01');
+                                  }
+                                }}
+                                required={paymentMethod === 'credit_card'}
+                                className="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary text-base bg-white"
+                              >
+                                {years.map(y => (
+                                  <option key={y} value={y}>{y}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Nom sur la carte</label>
-                      <Input placeholder="John Doe" />
-                    </div>
+                      <FormField
+                        control={form.control}
+                        name="cvc"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>CVC</FormLabel>
+                            <FormControl>
+                            <Input placeholder="123" maxLength={3} inputMode="numeric" pattern="\d{3}" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    
+                    <FormField
+                      control={form.control}
+                      name="cardName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nom sur la carte</FormLabel>
+                          <FormControl>
+                            <Input placeholder="John Doe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </TabsContent>
               </Tabs>

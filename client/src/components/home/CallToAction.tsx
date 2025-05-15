@@ -29,10 +29,10 @@ export default function CallToAction() {
         description: "Merci pour votre inscription à notre newsletter!",
       });
       setEmail("");
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'inscription",
+        description: error.data?.error || error.details || error.message || "Une erreur est survenue lors de l'inscription à la newsletter.",
         variant: "destructive",
       });
     } finally {
@@ -41,10 +41,10 @@ export default function CallToAction() {
   };
 
   return (
-    <section className="py-24 relative">
+    <section className="py-16 md:py-12 relative">
       <div className="absolute inset-0 z-0">
         <img
-          src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1600&h=600"
+          src="/bottom-banner.jpg"
           alt="Urban street fashion"
           className="w-full h-full object-cover"
         />
