@@ -96,7 +96,7 @@ LOST & FOUND is a modern, premium ecommerce platform focused on streetwear fashi
 
 #### Directory Tree
 ```
-StreetStyleCentral/
+LOST & FOUND/
 ├── client/                # Frontend React app
 │   ├── public/            # Static assets
 │   └── src/
@@ -226,7 +226,7 @@ LOST & FOUND est une plateforme e-commerce moderne et premium dédiée au street
 
 #### Arborescence du projet
 ```
-StreetStyleCentral/
+LOST & FOUND/
 ├── client/                # Application React (frontend)
 │   ├── public/            # Fichiers statiques
 │   └── src/
