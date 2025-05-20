@@ -19,7 +19,7 @@ export default function SuccessPage() {
   // Clear cart on mount
   useEffect(() => {
     if (!hasClearedCart.current) {
-      clearCart();
+    clearCart();
       hasClearedCart.current = true;
     }
   }, [clearCart]);

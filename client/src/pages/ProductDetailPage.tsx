@@ -10,6 +10,8 @@ import { ArrowLeft, Check, Heart, Truck, RefreshCw } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/context/AuthContext";
+import { AuthPopup } from "@/components/auth/AuthPopup";
 
 // Define product interface for stronger typing
 interface Product {
@@ -36,6 +38,8 @@ export default function ProductDetailPage() {
   const { toast } = useToast();
   const [isAddingWishlist, setIsAddingWishlist] = useState(false);
   const [wishlistAdded, setWishlistAdded] = useState(false);
+  const { user } = useAuth();
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
 
   // Fetch product details
   const { data: product, isLoading: isLoadingProduct } = useQuery<Product>({
@@ -98,6 +102,12 @@ export default function ProductDetailPage() {
 
   const handleToggleWishlist = async () => {
     if (!product) return;
+    
+    if (!user) {
+      setShowAuthPopup(true);
+      return;
+    }
+
     setIsAddingWishlist(true);
     try {
       if (wishlistAdded) {
@@ -358,6 +368,11 @@ export default function ProductDetailPage() {
           </div>
         )}
       </div>
+
+      <AuthPopup 
+        open={showAuthPopup} 
+        onClose={() => setShowAuthPopup(false)} 
+      />
     </MainLayout>
   );
 }

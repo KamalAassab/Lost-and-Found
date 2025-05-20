@@ -4,7 +4,7 @@ import Categories from '../components/Categories';
 const Home: React.FC = () => {
   return (
     <div>
-      <h1>Welcome to StreetStyleCentral</h1>
+      <h1>Welcome to LOST & FOUND</h1>
       <Categories />
     </div>
   );

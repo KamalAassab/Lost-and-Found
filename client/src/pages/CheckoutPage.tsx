@@ -108,7 +108,6 @@ export default function CheckoutPage() {
                     <span className="font-semibold">Délais de Livraison</span>
                     <ul className="list-disc ml-5 mt-1">
                       <li>Settat : 1-2 jours ouvrables</li>
-                      <li>Grandes villes : 2-3 jours ouvrables</li>
                       <li>Autres régions : 3-5 jours ouvrables</li>
                     </ul>
                   </div>

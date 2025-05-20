@@ -5,7 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
 import { ProductQuickView } from "@/components/product/ProductQuickView";
-import { EyeIcon, ShoppingBag } from "lucide-react";
+import { EyeIcon, ShoppingBag, Heart } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { AuthPopup } from "@/components/auth/AuthPopup";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 interface ProductCardProps {
   product: {
@@ -23,7 +27,12 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, compact = false }: ProductCardProps) {
   const [showQuickView, setShowQuickView] = React.useState(false);
+  const [showAuthPopup, setShowAuthPopup] = React.useState(false);
+  const [isAddingWishlist, setIsAddingWishlist] = React.useState(false);
+  const [wishlistAdded, setWishlistAdded] = React.useState(false);
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   const hasDiscount = product.oldPrice != null;
   const discountPercentage = hasDiscount
@@ -52,6 +61,33 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
         imageUrl: product.image,
         category: categoryValue
       });
+    }
+  };
+
+  const handleToggleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!user) {
+      setShowAuthPopup(true);
+      return;
+    }
+
+    setIsAddingWishlist(true);
+    try {
+      if (wishlistAdded) {
+        await apiRequest("DELETE", `/api/wishlist/${product.id}`);
+        setWishlistAdded(false);
+        toast({ title: "Retiré de la liste de souhaits", description: "Ce produit a été retiré de votre liste de souhaits." });
+      } else {
+        await apiRequest("POST", "/api/wishlist", { productId: product.id });
+        setWishlistAdded(true);
+        toast({ title: "Ajouté à la liste de souhaits", description: "Ce produit a été ajouté à votre liste de souhaits." });
+      }
+    } catch (error: any) {
+      toast({ title: "Erreur", description: error?.message || "Erreur lors de la mise à jour de la liste de souhaits", variant: "destructive" });
+    } finally {
+      setIsAddingWishlist(false);
     }
   };
 
@@ -84,13 +120,7 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
           {/* Hover overlay for action buttons */}
           <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
             <div className="flex gap-2">
-              <Button
-                className={`${buttonSize} flex items-center justify-center bg-white text-black hover:bg-black hover:text-white rounded-full p-0 transition-colors duration-200 border border-black shadow`}
-                onClick={handleAddToCart}
-                aria-label="Ajouter au panier"
-              >
-                <ShoppingBag className="h-4 w-4" style={{ width: iconSize, height: iconSize }} />
-              </Button>
+              {/* Show only quick view and wishlist buttons for all cards */}
               <Button
                 className={`${buttonSize} flex items-center justify-center bg-white text-black hover:bg-black hover:text-white rounded-full p-0 transition-colors duration-200 border border-black shadow`}
                 onClick={e => {
@@ -101,6 +131,14 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
                 aria-label="Voir le produit"
               >
                 <EyeIcon className="h-4 w-4" style={{ width: iconSize, height: iconSize }} />
+              </Button>
+              <Button
+                className={`${buttonSize} flex items-center justify-center bg-white text-black hover:bg-black hover:text-white rounded-full p-0 transition-colors duration-200 border border-black shadow`}
+                onClick={handleToggleWishlist}
+                disabled={isAddingWishlist}
+                aria-label={wishlistAdded ? "Retirer de la liste de souhaits" : "Ajouter à la liste de souhaits"}
+              >
+                <Heart className={`h-4 w-4 ${wishlistAdded ? 'fill-current' : ''}`} style={{ width: iconSize, height: iconSize }} />
               </Button>
             </div>
           </div>
@@ -125,6 +163,11 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
           onClose={() => setShowQuickView(false)}
         />
       )}
+
+      <AuthPopup 
+        open={showAuthPopup} 
+        onClose={() => setShowAuthPopup(false)} 
+      />
     </>
   );
 }

@@ -46,19 +46,19 @@ export default function Footer() {
     <footer className="bg-primary text-white pt-16 pb-6">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-          <div className="p-6 rounded-lg backdrop-blur-sm">
-            <h3 className="text-xl font-bold font-montserrat mb-4 text-left">
-              <ShopLogo className="h-8 w-auto mx-auto" />
-            </h3>
-            <p className="text-neutral-400 mb-4">
+          <div className="p-6 rounded-lg backdrop-blur-sm flex flex-col items-center text-center border border-white/10 bg-white/5 shadow-lg">
+            <div className="mb-3">
+              <ShopLogo className="h-14 w-auto mx-auto mb-2 drop-shadow-lg" />
+            </div>
+            <p className="text-neutral-100 mb-4 text-lg font-medium leading-relaxed max-w-xs mx-auto" style={{letterSpacing: '0.01em', fontFamily: "'Grenze Gotisch', serif"}}>
               Votre destination streetwear authentique pour exprimer votre style unique.
             </p>
             <div className="flex justify-center space-x-6 mt-4">
-              <a href="#" className="text-neutral-400 hover:text-white transition-colors">
-                <Facebook size={20} />
+              <a href="#" className="text-neutral-300 hover:text-white transition-colors">
+                <Facebook size={22} />
               </a>
-              <a href="https://instagram.com/lostandfound_vision" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-white transition-colors">
-                <Instagram size={20} />
+              <a href="https://instagram.com/lostandfound_vision" target="_blank" rel="noopener noreferrer" className="text-neutral-300 hover:text-white transition-colors">
+                <Instagram size={22} />
               </a>
             </div>
           </div>

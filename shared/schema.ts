@@ -60,7 +60,6 @@ export const orders = mysqlTable('orders', {
   paymentMethod: varchar('payment_method', { length: 20, enum: PAYMENT_METHODS }).notNull(),
   total: decimal('total', { precision: 10, scale: 2 }).notNull(),
   free_shipping: boolean('free_shipping').default(false).notNull(),
-  promoApplied: boolean('promo_applied').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull()
 });
 

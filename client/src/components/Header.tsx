@@ -107,7 +107,7 @@ export default function Header({ toggleCart }: HeaderProps) {
       </div>
 
       {/* Navigation bar */}
-      <nav className={cn("container mx-auto px-4 flex flex-wrap items-center justify-between relative transition-all duration-300", scrolled ? "py-2" : "py-4")}> 
+      <nav className={cn("container mx-auto px-4 flex flex-wrap items-center justify-between relative transition-all duration-300", scrolled ? "py-2" : "py-4")}>
         {/* Logo */}
         <Link href="/" className="text-2xl md:text-3xl font-bold font-montserrat tracking-wider ml-2 text-white">
           <ShopLogo className={cn("transition-all duration-300", scrolled ? "h-8" : "h-12")} />

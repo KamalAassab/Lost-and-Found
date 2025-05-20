@@ -77,7 +77,6 @@ async function resetDatabase() {
         payment_method VARCHAR(20) NOT NULL,
         total DECIMAL(10,2) NOT NULL,
         free_shipping BOOLEAN DEFAULT FALSE NOT NULL,
-        promo_applied BOOLEAN DEFAULT FALSE NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
       )
     `);

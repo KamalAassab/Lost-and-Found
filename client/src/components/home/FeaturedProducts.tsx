@@ -63,36 +63,36 @@ export default function FeaturedProducts() {
         {/* Tabs */}
         <div className="flex justify-center mb-10">
           <div className="bg-neutral-100 p-1 rounded-full inline-flex">
-            <button
+          <button
               className={`px-4 py-2 font-medium text-xs rounded-full transition-all duration-300 ${
                 activeTab === "all" 
                   ? "bg-black text-white shadow" 
                   : "text-neutral-600 hover:text-black"
-              }`}
-              onClick={() => setActiveTab("all")}
-            >
-              TOUS
-            </button>
-            <button
+            }`}
+            onClick={() => setActiveTab("all")}
+          >
+            TOUS
+          </button>
+          <button
               className={`px-4 py-2 font-medium text-xs rounded-full transition-all duration-300 ${
                 activeTab === "hoodies" 
                   ? "bg-black text-white shadow" 
                   : "text-neutral-600 hover:text-black"
-              }`}
-              onClick={() => setActiveTab("hoodies")}
-            >
-              HOODIES
-            </button>
-            <button
+            }`}
+            onClick={() => setActiveTab("hoodies")}
+          >
+            HOODIES
+          </button>
+          <button
               className={`px-4 py-2 font-medium text-xs rounded-full transition-all duration-300 ${
                 activeTab === "tshirts" 
                   ? "bg-black text-white shadow" 
                   : "text-neutral-600 hover:text-black"
-              }`}
-              onClick={() => setActiveTab("tshirts")}
-            >
-              T-SHIRTS
-            </button>
+            }`}
+            onClick={() => setActiveTab("tshirts")}
+          >
+            T-SHIRTS
+          </button>
           </div>
         </div>
 
@@ -118,31 +118,31 @@ export default function FeaturedProducts() {
               <ChevronRight className="h-6 w-6" />
             </button>
           )}
-          {isLoading ? (
+        {isLoading ? (
             <div ref={scrollRef} className="flex overflow-x-auto gap-4 md:gap-6 xl:gap-8 pb-4 scroll-smooth">
               {[...Array(5)].map((_, index) => (
                 <div key={index} className="flex-none w-[170px] md:w-[180px] xl:w-[200px] bg-white rounded-xl overflow-hidden shadow">
                   <Skeleton className="h-[120px] md:h-[140px] xl:h-[150px] w-full" />
                   <div className="p-3 md:p-4">
                     <Skeleton className="h-5 w-3/4 mb-2" />
-                    <Skeleton className="h-4 w-1/4" />
-                  </div>
+                  <Skeleton className="h-4 w-1/4" />
                 </div>
-              ))}
-            </div>
-          ) : error ? (
-            <div className="text-center py-8">
-              <p className="text-red-500">Erreur lors du chargement des produits. Veuillez réessayer.</p>
-            </div>
-          ) : (
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-8">
+            <p className="text-red-500">Erreur lors du chargement des produits. Veuillez réessayer.</p>
+          </div>
+        ) : (
             <div ref={scrollRef} className="flex overflow-x-auto gap-4 md:gap-6 xl:gap-8 pb-4 scroll-smooth">
               {filteredProducts.map((product: any) => (
                 <div key={product.id} className="flex-none w-[170px] md:w-[180px] xl:w-[200px]">
                   <ProductCard product={product} compact />
                 </div>
-              ))}
-            </div>
-          )}
+            ))}
+          </div>
+        )}
         </div>
 
         <div className="text-center mt-10">

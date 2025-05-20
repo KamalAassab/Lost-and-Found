@@ -97,7 +97,6 @@ async function main() {
       payment_method ENUM('credit_card', 'debit_card', 'paypal', 'bank_transfer') NOT NULL,
       total DECIMAL(10,2) NOT NULL,
       free_shipping BOOLEAN DEFAULT FALSE NOT NULL,
-      promo_applied BOOLEAN DEFAULT FALSE NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
       INDEX idx_orders_status (status),
       INDEX idx_orders_customer_email (customer_email)

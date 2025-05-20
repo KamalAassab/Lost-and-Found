@@ -151,9 +151,9 @@ export default function ProductsPage() {
                 placeholder="Rechercher..."
                 className="pl-10 rounded-full border border-neutral-300 focus:border-black focus:ring-2 focus:ring-black/20 transition text-base bg-neutral-50"
                 value={searchTerm}
-                onChange={handleSearchChange}
-              />
-            </div>
+                  onChange={handleSearchChange}
+                />
+              </div>
             </div>
 
             <div className="flex items-center gap-2">
