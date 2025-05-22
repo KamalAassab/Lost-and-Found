@@ -129,124 +129,124 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-4xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">{product.name}</DialogTitle>
-            <DialogDescription>
-              Aperçu rapide du produit
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 max-h-[70vh] overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar">
-            <div>
-              <img
-                src={`/uploads/${(product as any).image || (product as any).imageUrl}`}
-                alt={product.name}
-                className="w-full h-auto object-cover"
-              />
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-4xl">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold">{product.name}</DialogTitle>
+          <DialogDescription>
+            Aperçu rapide du produit
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 max-h-[70vh] overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar">
+          <div>
+            <img
+              src={`/uploads/${(product as any).image || (product as any).imageUrl}`}
+              alt={product.name}
+              className="w-full h-auto object-cover"
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center mb-4">
+              <span className="text-accent font-bold text-xl mr-3">
+                {formatPrice(product.price)}
+              </span>
+              {product.oldPrice && (
+                <span className="text-neutral-500 line-through">
+                  {formatPrice(product.oldPrice)}
+                </span>
+              )}
             </div>
 
-            <div>
-              <div className="flex items-center mb-4">
-                <span className="text-accent font-bold text-xl mr-3">
-                  {formatPrice(product.price)}
+            <p className="text-neutral-600 mb-6">
+              {product.description || 
+                "Hoodie streetwear premium avec un design urbain minimaliste. Fabriqué en coton de haute qualité pour un confort optimal au quotidien."}
+            </p>
+
+            <div className="mb-6">
+              <h3 className="font-semibold mb-2">Taille</h3>
+              <div className="flex flex-wrap gap-2">
+                {allSizes.map((size) => {
+                  const available = sizes.includes(size);
+                  return (
+                  <button
+                    key={size}
+                    className={`border px-3 py-1 text-sm ${
+                        selectedSize === size && available
+                        ? "border-primary bg-primary text-white"
+                          : available
+                            ? "border-neutral-300 hover:border-primary"
+                            : "border-neutral-200 text-neutral-400 cursor-not-allowed bg-neutral-100"
+                    }`}
+                      onClick={() => available && setSelectedSize(size)}
+                      disabled={!available}
+                      type="button"
+                  >
+                    {size}
+                  </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="font-semibold mb-2">Quantité</h3>
+              <div className="flex items-center border border-neutral-300 w-max">
+                <button
+                  className="px-3 py-2 text-sm hover:bg-neutral-100"
+                  onClick={decreaseQuantity}
+                >
+                  -
+                </button>
+                <span className="px-4 py-2 text-sm border-l border-r border-neutral-300">
+                  {quantity}
                 </span>
-                {product.oldPrice && (
-                  <span className="text-neutral-500 line-through">
-                    {formatPrice(product.oldPrice)}
-                  </span>
-                )}
-              </div>
-
-              <p className="text-neutral-600 mb-6">
-                {product.description || 
-                  "Hoodie streetwear premium avec un design urbain minimaliste. Fabriqué en coton de haute qualité pour un confort optimal au quotidien."}
-              </p>
-
-              <div className="mb-6">
-                <h3 className="font-semibold mb-2">Taille</h3>
-                <div className="flex flex-wrap gap-2">
-                  {allSizes.map((size) => {
-                    const available = sizes.includes(size);
-                    return (
-                    <button
-                      key={size}
-                      className={`border px-3 py-1 text-sm ${
-                          selectedSize === size && available
-                          ? "border-primary bg-primary text-white"
-                            : available
-                              ? "border-neutral-300 hover:border-primary"
-                              : "border-neutral-200 text-neutral-400 cursor-not-allowed bg-neutral-100"
-                      }`}
-                        onClick={() => available && setSelectedSize(size)}
-                        disabled={!available}
-                        type="button"
-                    >
-                      {size}
-                    </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <h3 className="font-semibold mb-2">Quantité</h3>
-                <div className="flex items-center border border-neutral-300 w-max">
-                  <button
-                    className="px-3 py-2 text-sm hover:bg-neutral-100"
-                    onClick={decreaseQuantity}
-                  >
-                    -
-                  </button>
-                  <span className="px-4 py-2 text-sm border-l border-r border-neutral-300">
-                    {quantity}
-                  </span>
-                  <button
-                    className="px-3 py-2 text-sm hover:bg-neutral-100"
-                    onClick={increaseQuantity}
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex space-x-4">
-                <Button
-                  className="flex-grow bg-primary text-white py-3 font-bold uppercase text-sm tracking-wider hover:bg-neutral-800 transition duration-300"
-                  onClick={handleAddToCart}
+                <button
+                  className="px-3 py-2 text-sm hover:bg-neutral-100"
+                  onClick={increaseQuantity}
                 >
-                  Ajouter au panier
-                </Button>
-                <Button
-                  variant={wishlistAdded ? "default" : "outline"}
-                  className={`w-12 h-12 flex items-center justify-center border border-neutral-300 transition duration-300 ${wishlistAdded ? 'bg-primary text-white border-primary' : 'hover:border-primary hover:text-primary'}`}
-                  onClick={handleToggleWishlist}
-                  disabled={isAddingWishlist}
-                  aria-label={wishlistAdded ? "Retirer de la liste de souhaits" : "Ajouter à la liste de souhaits"}
-                >
-                  <Heart className={`h-5 w-5 ${wishlistAdded ? 'fill-current' : ''}`} />
-                </Button>
+                  +
+                </button>
               </div>
+            </div>
 
-              <div className="mt-6 pt-6 border-t border-neutral-200">
-                <div className="flex items-center mb-2">
-                  <Check className="text-green-500 mr-2 h-5 w-5" />
-                  <span>En stock - Expédition sous 24h</span>
-                </div>
-                <div className="flex items-center mb-2">
-                  <Truck className="text-neutral-500 mr-2 h-5 w-5" />
-                  <span>Livraison gratuite pour les commandes de plus de 500 MAD</span>
-                </div>
-                <div className="flex items-center">
-                  <RefreshCw className="text-neutral-500 mr-2 h-5 w-5" />
-                  <span>Retours gratuits sous 30 jours</span>
-                </div>
+            <div className="flex space-x-4">
+              <Button
+                className="flex-grow bg-primary text-white py-3 font-bold uppercase text-sm tracking-wider hover:bg-neutral-800 transition duration-300"
+                onClick={handleAddToCart}
+              >
+                Ajouter au panier
+              </Button>
+              <Button
+                variant={wishlistAdded ? "default" : "outline"}
+                className={`w-12 h-12 flex items-center justify-center border border-neutral-300 transition duration-300 ${wishlistAdded ? 'bg-primary text-white border-primary' : 'hover:border-primary hover:text-primary'}`}
+                onClick={handleToggleWishlist}
+                disabled={isAddingWishlist}
+                aria-label={wishlistAdded ? "Retirer de la liste de souhaits" : "Ajouter à la liste de souhaits"}
+              >
+                <Heart className={`h-5 w-5 ${wishlistAdded ? 'fill-current' : ''}`} />
+              </Button>
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-neutral-200">
+              <div className="flex items-center mb-2">
+                <Check className="text-green-500 mr-2 h-5 w-5" />
+                <span>En stock - Expédition sous 24h</span>
+              </div>
+              <div className="flex items-center mb-2">
+                <Truck className="text-neutral-500 mr-2 h-5 w-5" />
+                <span>Livraison gratuite pour les commandes de plus de 500 MAD</span>
+              </div>
+              <div className="flex items-center">
+                <RefreshCw className="text-neutral-500 mr-2 h-5 w-5" />
+                <span>Retours gratuits sous 30 jours</span>
               </div>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </DialogContent>
+    </Dialog>
 
       <AuthPopup 
         open={showAuthPopup} 

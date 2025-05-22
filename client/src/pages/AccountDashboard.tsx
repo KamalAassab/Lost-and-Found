@@ -144,7 +144,7 @@ export default function AccountDashboard() {
 
   const handleLogout = async () => {
     await logout();
-    setLocation("/login");
+    setLocation("/");
   };
 
   // Helper for status badge color and label (French, colorful)

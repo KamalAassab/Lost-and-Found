@@ -13,7 +13,7 @@ import multer from 'multer';
 import path from 'path';
 import { requireAdmin } from './middleware';
 import { eq, and, desc } from "drizzle-orm";
-import { createOrder, calculateOrderTotal, isShippingFree } from "./storage";
+import { createOrder, isShippingFree } from "./storage";
 
 const JWT_SECRET = process.env.JWT_SECRET || "lost_and_found_secret_key";
 
@@ -467,29 +467,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating order status:", error);
       res.status(500).json({ message: "Erreur lors de la mise à jour du statut de la commande", details: error instanceof Error ? error.message : error });
-    }
-  });
-
-  // Newsletter subscription
-  app.post(`${apiPrefix}/subscribe`, async (req, res) => {
-    try {
-      const { email } = req.body;
-      const validatedEmail = schema.subscribersInsertSchema.parse({ email }).email;
-      const result = await storageService.addSubscriber(validatedEmail);
-      
-      if (result && 'error' in result) {
-        return res.status(400).json({ message: result.error });
-      } else if (!result) {
-        return res.status(500).json({ message: "Subscription failed" });
-      }
-      
-      res.status(201).json({ message: "Inscription réussie à la newsletter" });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ errors: error.errors });
-      }
-      console.error("Error subscribing to newsletter:", error);
-      res.status(500).json({ message: "Erreur lors de l'inscription à la newsletter" });
     }
   });
 

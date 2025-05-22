@@ -330,6 +330,30 @@ export const createUser = async (data: schema.UserInsert) => {
   return user;
 };
 
+export const ensureAdminUser = async () => {
+  const adminUsername = 'admin'; // Or get from env variables
+  const adminPassword = process.env.ADMIN_PASSWORD || 'adminpassword'; // Default password
+
+  try {
+    const existingAdmin = await getUserByUsername(adminUsername);
+
+    if (!existingAdmin) {
+      console.log('Admin user not found, creating...');
+      await createUser({
+        username: adminUsername,
+        email: 'admin@lostandfound.com', // Or another default email
+        password: adminPassword,
+        isAdmin: true,
+      });
+      console.log('Admin user created successfully.');
+    } else {
+       console.log('Admin user already exists.');
+    }
+  } catch (error) {
+    console.error('Error ensuring admin user:', error);
+  }
+};
+
 // Orders
 export const createOrder = async (
   orderData: Omit<schema.OrderInsert, 'id'>,
@@ -410,112 +434,11 @@ export const deleteOrder = async (id: number) => {
   return deleted;
 };
 
-// Subscribers
-export const addSubscriber = async (email: string) => {
-  try {
-    await db
-      .insert(schema.subscribers)
-      .values({ email });
-
-    const subscriber = await db.query.subscribers.findFirst({
-      where: eq(schema.subscribers.email, email),
-    });
-    return subscriber;
-  } catch (error) {
-    // Handle unique constraint violation
-    if ((error as any).code === '23505') {
-      return { error: 'Cette adresse e-mail est déjà inscrite' };
-    }
-    throw error;
-  }
-};
-
-// Calculate promotional discounts
-export const calculatePromotions = (items: { productId: number; quantity: number; size: string; price: number; name: string; category: string }[]) => {
-  const result = [...items];
-  const hoodieItems = items.filter(item => item.category === 'hoodie').sort((a, b) => b.price - a.price);
-  const tshirtItems = items.filter(item => item.category === 'tshirt').sort((a, b) => b.price - a.price);
-  
-  // Apply "3 hoodies + 1 free" promotion
-  const freeHoodiesCount = Math.floor(hoodieItems.reduce((sum, item) => sum + item.quantity, 0) / 4);
-  let remainingFreeHoodies = freeHoodiesCount;
-  
-  // Apply "2 tshirts + 1 free" promotion
-  const freeTshirtsCount = Math.floor(tshirtItems.reduce((sum, item) => sum + item.quantity, 0) / 3);
-  let remainingFreeTshirts = freeTshirtsCount;
-  
-  // Mark items as free
-  for (let i = 0; i < result.length; i++) {
-    const item = result[i];
-    if (item.category === 'hoodie' && remainingFreeHoodies > 0) {
-      const freeCount = Math.min(item.quantity, remainingFreeHoodies);
-      if (freeCount > 0) {
-        item.isFree = true;
-        item.freeCount = freeCount;
-        remainingFreeHoodies -= freeCount;
-      }
-    } else if (item.category === 'tshirt' && remainingFreeTshirts > 0) {
-      const freeCount = Math.min(item.quantity, remainingFreeTshirts);
-      if (freeCount > 0) {
-        item.isFree = true;
-        item.freeCount = freeCount;
-        remainingFreeTshirts -= freeCount;
-      }
-    }
-  }
-  
-  return {
-    items: result,
-    freeHoodiesCount,
-    freeTshirtsCount,
-    promoApplied: freeHoodiesCount > 0 || freeTshirtsCount > 0
-  };
-};
-
-// Calculate totals
-export const calculateOrderTotal = (items: { quantity: number; price: number; isFree?: boolean; freeCount?: number }[]) => {
-  let total = 0;
-  
-  for (const item of items) {
-    if (item.isFree && item.freeCount) {
-      total += (item.quantity - item.freeCount) * item.price;
-    } else {
-      total += item.quantity * item.price;
-    }
-  }
-  
-  // Add shipping cost if total is less than 500 MAD
-  if (total < 500) {
-    total += 50;
-  }
-  
-  return total;
-};
-
-// Check if shipping is free
-export const isShippingFree = (total: number) => {
+// Messages
+export const isShippingFree = (total: number): boolean => {
   return total >= 500;
 };
 
-// Create admin user if it doesn't exist
-export const ensureAdminUser = async () => {
-  const existingAdmin = await db.query.users.findFirst({
-    where: eq(schema.users.username, "admin")
-  });
-
-  if (!existingAdmin) {
-    const hashedPassword = await bcrypt.hash("admin123", 10);
-    await db.insert(schema.users).values({
-      username: "admin",
-      email: "admin@streetstylecentral.com",
-      password: hashedPassword,
-      isAdmin: true
-    });
-    console.log("✅ Admin user created");
-  }
-};
-
-// Messages
 export const createMessage = async (data: schema.MessageInsert) => {
   try {
     const result = await db.insert(schema.messages).values(data);

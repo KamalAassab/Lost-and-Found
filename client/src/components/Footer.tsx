@@ -2,46 +2,8 @@ import React from "react";
 import { Link } from "wouter";
 import { ShopLogo } from "@/components/ui/shop-logo";
 import { Facebook, Instagram, MapPin, Phone, Mail, HelpCircle, Truck, RotateCcw, Ruler, MessageCircle } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 
 export default function Footer() {
-  const { toast } = useToast();
-  const [email, setEmail] = React.useState("");
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !email.includes('@')) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez entrer une adresse email valide",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await apiRequest('POST', '/api/subscribe', { email });
-      toast({
-        title: "Succès",
-        description: "Merci pour votre inscription à notre newsletter!",
-      });
-      setEmail("");
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'inscription",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <footer className="bg-primary text-white pt-16 pb-6">
       <div className="container mx-auto px-4">

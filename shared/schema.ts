@@ -74,12 +74,6 @@ export const orderItems = mysqlTable('order_items', {
   createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
-export const subscribers = mysqlTable('subscribers', {
-  id: int('id').primaryKey().autoincrement(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
-  createdAt: timestamp('created_at').defaultNow().notNull()
-});
-
 export const wishlists = mysqlTable('wishlists', {
   id: int('id').primaryKey().autoincrement(),
   userId: int('user_id').notNull(),
@@ -161,12 +155,6 @@ export const orderItemsInsertSchema = createInsertSchema(orderItems, {
 });
 export type OrderItemInsert = z.infer<typeof orderItemsInsertSchema>;
 export type OrderItem = typeof orderItems.$inferSelect;
-
-export const subscribersInsertSchema = createInsertSchema(subscribers, {
-  email: (schema) => schema.email("Veuillez fournir un e-mail valide"),
-});
-export type SubscriberInsert = z.infer<typeof subscribersInsertSchema>;
-export type Subscriber = typeof subscribers.$inferSelect;
 
 // Extended schemas for API
 export const cartItemSchema = z.object({

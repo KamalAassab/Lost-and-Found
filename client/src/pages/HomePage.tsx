@@ -1,7 +1,6 @@
-import React from "react";
+import React, { useRef } from "react";
 import MainLayout from "@/layouts/MainLayout";
 import HeroSection from "@/components/home/HeroSection";
-import PromotionBanner from "@/components/home/PromotionBanner";
 import CategoryHighlight from "@/components/home/CategoryHighlight";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
 import CallToAction from "@/components/home/CallToAction";
@@ -11,13 +10,20 @@ export default function HomePage() {
   React.useEffect(() => {
     document.title = "L&F Vision";
   }, []);
+
+  const featuredProductsRef = useRef<HTMLDivElement>(null);
+
+  const scrollToFeaturedProducts = () => {
+    featuredProductsRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
   
   return (
     <MainLayout>
-      <HeroSection />
-      <PromotionBanner />
+      <HeroSection onBuyNowClick={scrollToFeaturedProducts} />
       <CategoryHighlight />
-      <FeaturedProducts />
+      <div ref={featuredProductsRef}>
+        <FeaturedProducts />
+      </div>
       <CallToAction />
     </MainLayout>
   );

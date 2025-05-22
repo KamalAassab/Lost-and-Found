@@ -121,7 +121,7 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
           <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
             <div className="flex gap-2">
               {/* Show only quick view and wishlist buttons for all cards */}
-              <Button
+              <Button 
                 className={`${buttonSize} flex items-center justify-center bg-white text-black hover:bg-black hover:text-white rounded-full p-0 transition-colors duration-200 border border-black shadow`}
                 onClick={e => {
                   e.preventDefault();
@@ -149,11 +149,11 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
           </Link>
           <div className="flex items-center gap-2 w-full mt-1">
             <span className={priceClass}>{formatPrice(product.price)}</span>
-            {hasDiscount && (
+              {hasDiscount && (
               <span className={oldPriceClass}>{formatPrice(product.oldPrice!)}</span>
-            )}
+              )}
+            </div>
           </div>
-        </div>
       </div>
 
       {showQuickView && (

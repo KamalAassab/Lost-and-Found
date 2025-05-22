@@ -127,12 +127,6 @@ async function main() {
       UNIQUE KEY wishlists_user_product_unique (user_id, product_id)
     )`);
 
-    await db.execute(sql`CREATE TABLE IF NOT EXISTS subscribers (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      email VARCHAR(255) NOT NULL UNIQUE,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
-    )`);
-
     await db.execute(sql`CREATE TABLE IF NOT EXISTS messages (
       id INT AUTO_INCREMENT PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
