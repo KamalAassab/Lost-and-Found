@@ -28,6 +28,7 @@ import AccountDashboard from "@/pages/AccountDashboard";
 import { Loader2 } from "lucide-react";
 import TermsPage from "@/pages/TermsPage";
 import PrivacyPage from "@/pages/PrivacyPage";
+import AdminUsersPage from "@/pages/admin/AdminUsersPage";
 
 function Router() {
   return (
@@ -53,6 +54,7 @@ function Router() {
       <Route path="/admin/orders" component={AdminOrdersPage} />
       <Route path="/admin/categories" component={AdminCategoriesPage} />
       <Route path="/admin/messages" component={MessagesPage} />
+      <Route path="/admin/users" component={AdminUsersPage} />
       
       {/* Support routes */}
       <Route path="/support/faq" component={FAQPage} />

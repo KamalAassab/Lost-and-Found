@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
-import { useLocation, useRoute } from "wouter";
+import { useLocation, useRoute, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, Package, FileText, FileSliders, LayoutDashboard, LogOut } from "lucide-react";
+import { ShoppingBag, Package, FileText, FileSliders, LayoutDashboard, LogOut, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ShopLogo } from "@/components/ui/shop-logo";
 
@@ -20,6 +20,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isOrders] = useRoute("/admin/orders");
   const [isCategories] = useRoute("/admin/categories");
   const [isMessages] = useRoute("/admin/messages");
+  const [isUsers] = useRoute("/admin/users");
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -45,11 +46,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     setLocation("/admin");
   };
 
+  const navItems = [
+    { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+    { name: "Produits", href: "/admin/products", icon: ShoppingBag },
+    { name: "Catégories", href: "/admin/categories", icon: FileText },
+    { name: "Commandes", href: "/admin/orders", icon: Package },
+    { name: "Messages", href: "/admin/messages", icon: FileSliders },
+    { name: "Utilisateurs", href: "/admin/users", icon: Users },
+  ];
+
   return (
     <div className="flex h-screen overflow-hidden bg-gray-100">
       {/* Sidebar */}
       <div className="hidden md:flex md:flex-shrink-0">
-        <div className="flex flex-col w-64 min-h-screen bg-black text-white rounded-r-2xl shadow-xl transition-all duration-300">
+        <div className="flex flex-col w-64 bg-black text-white shadow-lg transition-all duration-300">
           <div className="flex items-center justify-center h-24 px-4">
             <a href="/" aria-label="Accueil" className="focus:outline-none focus:ring-2 focus:ring-white rounded transition hover:opacity-80">
               <ShopLogo className="h-14 w-auto" />
@@ -57,71 +67,32 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
           <div className="flex flex-col flex-grow pt-8 overflow-y-auto">
             <nav className="flex-1 px-4 space-y-2">
-              <Button
-                variant="ghost"
-                className={cn(
-                  "w-full justify-start text-white font-semibold text-lg rounded-xl py-3 px-3 mb-1 transition-all duration-200 hover:bg-gray-800 hover:text-white border border-transparent",
-                  isDashboard && "bg-white/10 border border-white text-white font-bold shadow-md"
-                )}
-                onClick={() => setLocation("/admin/dashboard")}
-              >
-                <LayoutDashboard className="mr-3 h-5 w-5" />
-                Tableau de bord
-              </Button>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "w-full justify-start text-white font-semibold text-lg rounded-xl py-3 px-3 mb-1 transition-all duration-200 hover:bg-gray-800 hover:text-white border border-transparent",
-                  isProducts && "bg-white/10 border border-white text-white font-bold shadow-md"
-                )}
-                onClick={() => setLocation("/admin/products")}
-              >
-                <ShoppingBag className="mr-3 h-5 w-5" />
-                Produits
-              </Button>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "w-full justify-start text-white font-semibold text-lg rounded-xl py-3 px-3 mb-1 transition-all duration-200 hover:bg-gray-800 hover:text-white border border-transparent",
-                  isOrders && "bg-white/10 border border-white text-white font-bold shadow-md"
-                )}
-                onClick={() => setLocation("/admin/orders")}
-              >
-                <Package className="mr-3 h-5 w-5" />
-                Commandes
-              </Button>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "w-full justify-start text-white font-semibold text-lg rounded-xl py-3 px-3 mb-1 transition-all duration-200 hover:bg-gray-800 hover:text-white border border-transparent",
-                  isCategories && "bg-white/10 border border-white text-white font-bold shadow-md"
-                )}
-                onClick={() => setLocation("/admin/categories")}
-              >
-                <FileText className="mr-3 h-5 w-5" />
-                Catégories
-              </Button>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "w-full justify-start text-white font-semibold text-lg rounded-xl py-3 px-3 mb-1 transition-all duration-200 hover:bg-gray-800 hover:text-white border border-transparent",
-                  isMessages && "bg-white/10 border border-white text-white font-bold shadow-md"
-                )}
-                onClick={() => setLocation("/admin/messages")}
-              >
-                <FileSliders className="mr-3 h-5 w-5" />
-                Messages
-              </Button>
+              {navItems.map((item) => {
+                 const [isActive] = useRoute(item.href);
+                 return (
+                  <Link 
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      "w-full flex items-center p-3 rounded-md transition-colors duration-200 group",
+                      isActive ? "bg-neutral-800 text-white" : "text-neutral-400 hover:bg-neutral-900 hover:text-white"
+                    )}
+                  >
+                    <item.icon className={cn("mr-4 h-5 w-5 transition-colors duration-200", isActive ? "text-white" : "text-neutral-500 group-hover:text-white")} />
+                    <span className="font-medium text-sm">{item.name}</span>
+                  </Link>
+                 );
+              })}
             </nav>
           </div>
-          <div className="p-6 border-t border-gray-800 mt-4">
+          <div className="p-4 border-t border-gray-800 mt-auto">
             <Button
               variant="ghost"
               className="w-full justify-start text-white font-semibold text-lg rounded-xl py-3 px-3 transition-all duration-200 hover:bg-gray-800 hover:text-white border border-gray-600"
               onClick={handleLogout}
             >
               <LogOut className="mr-3 h-5 w-5" />
-              <span className="font-bold">Déconnexion</span>
+              <span className="font-bold text-base">Déconnexion</span>
             </Button>
           </div>
         </div>
@@ -146,71 +117,24 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
         {/* Mobile navigation */}
         <div className="md:hidden flex justify-between overflow-x-auto bg-gray-800 text-white p-2">
-          <Button
-            variant="ghost"
-            className={cn(
-              "flex-1 py-2 px-1 text-xs text-white hover:bg-gray-700",
-              isDashboard && "bg-gray-700"
-            )}
-            onClick={() => setLocation("/admin/dashboard")}
-          >
-            <div className="flex flex-col items-center">
-              <LayoutDashboard className="h-5 w-5" />
-              <span>Dashboard</span>
-            </div>
-          </Button>
-          <Button
-            variant="ghost"
-            className={cn(
-              "flex-1 py-2 px-1 text-xs text-white hover:bg-gray-700",
-              isProducts && "bg-gray-700"
-            )}
-            onClick={() => setLocation("/admin/products")}
-          >
-            <div className="flex flex-col items-center">
-              <ShoppingBag className="h-5 w-5" />
-              <span>Produits</span>
-            </div>
-          </Button>
-          <Button
-            variant="ghost"
-            className={cn(
-              "flex-1 py-2 px-1 text-xs text-white hover:bg-gray-700",
-              isOrders && "bg-gray-700"
-            )}
-            onClick={() => setLocation("/admin/orders")}
-          >
-            <div className="flex flex-col items-center">
-              <Package className="h-5 w-5" />
-              <span>Commandes</span>
-            </div>
-          </Button>
-          <Button
-            variant="ghost"
-            className={cn(
-              "flex-1 py-2 px-1 text-xs text-white hover:bg-gray-700",
-              isCategories && "bg-gray-700"
-            )}
-            onClick={() => setLocation("/admin/categories")}
-          >
-            <div className="flex flex-col items-center">
-              <FileText className="h-5 w-5" />
-              <span>Catégories</span>
-            </div>
-          </Button>
-          <Button
-            variant="ghost"
-            className={cn(
-              "flex-1 py-2 px-1 text-xs text-white hover:bg-gray-700",
-              isMessages && "bg-gray-700"
-            )}
-            onClick={() => setLocation("/admin/messages")}
-          >
-            <div className="flex flex-col items-center">
-              <FileSliders className="h-5 w-5" />
-              <span>Messages</span>
-            </div>
-          </Button>
+          {navItems.map((item) => {
+            const [isActive] = useRoute(item.href);
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={cn(
+                  "flex-1 py-3 px-1 text-xs text-white hover:bg-gray-700",
+                  isActive ? "bg-gray-700" : ""
+                )}
+              >
+                <div className="flex flex-col items-center">
+                  <item.icon className="h-5 w-5 mb-1" />
+                  <span>{item.name}</span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
 
         {/* Content */}

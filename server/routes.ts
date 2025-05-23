@@ -672,6 +672,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // --- User Admin Endpoints ---
+
+  app.get(`${apiPrefix}/admin/users`, requireAdmin, async (req, res) => {
+    try {
+      const users = await storageService.getAllUsers();
+      // Do NOT send password hashes to the frontend
+      const usersWithoutPasswords = users.map(user => {
+        // Destructure to omit password
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
+      res.json(usersWithoutPasswords);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      // Log the specific error details
+      if (error instanceof Error) {
+        console.error("Detailed user fetch error:", error.message);
+        if (error.stack) console.error(error.stack);
+      } else {
+        console.error("Detailed user fetch error:", error);
+      }
+      res.status(500).json({ message: "Erreur lors de la récupération des utilisateurs" });
+    }
+  });
+
+  app.delete(`${apiPrefix}/admin/users/:id`, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "ID utilisateur invalide" });
+      }
+      const deletedUser = await storageService.deleteUser(id);
+      if (!deletedUser) {
+        return res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
+      // Do NOT return the password hash of the deleted user
+      const { password, ...deletedUserWithoutPassword } = deletedUser;
+      res.json({ message: "Utilisateur supprimé avec succès", user: deletedUserWithoutPassword });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ 
+        message: "Erreur lors de la suppression de l'utilisateur",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

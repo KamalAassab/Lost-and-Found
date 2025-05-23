@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Mail, User, Calendar, MessageCircle, Trash2 } from "lucide-react";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
+import { Loader2, Mail, User, Calendar, MessageCircle, Trash2, Eye } from "lucide-react";
 import AdminLayout from "@/layouts/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 
 interface Message {
   id: number;
@@ -22,6 +31,8 @@ function MessagesPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -65,8 +76,18 @@ function MessagesPageContent() {
     }
   };
 
+  const handleViewMessage = (message: Message) => {
+    setSelectedMessage(message);
+    setIsViewModalOpen(true);
+  };
+
+  const handleCloseViewModal = () => {
+    setIsViewModalOpen(false);
+    setSelectedMessage(null);
+  };
+
   return (
-    <div className="container mx-auto py-10">
+    <div className="space-y-6">
       <h1 className="text-3xl font-bold mb-8 text-center">Messages de Contact</h1>
       {isLoading ? (
         <div className="flex justify-center items-center min-h-[200px]">
@@ -77,46 +98,101 @@ function MessagesPageContent() {
       ) : (messages || []).length === 0 ? (
         <div className="text-gray-500 text-center">Aucun message pour le moment.</div>
       ) : (
-        <div className="grid gap-8 md:grid-cols-2">
-          {messages.map((msg) => (
-            <Card key={msg.id} className="shadow-lg rounded-xl border border-neutral-200 bg-white hover:shadow-2xl transition-shadow duration-200 relative">
-              <CardContent className="p-6 flex flex-col gap-3 h-full">
-                <div className="flex items-center gap-2 mb-1">
-                  <User className="h-5 w-5 text-primary" />
-                  <span className="font-semibold text-lg">{msg.name}</span>
-                  <span className="ml-auto text-xs text-gray-500 flex items-center gap-1">
-                    <Mail className="h-4 w-4 text-gray-400" />
-                    {msg.email}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 mb-2">
-                  <MessageCircle className="h-5 w-5 text-primary" />
-                  <span className="font-bold text-base text-primary/90">{msg.subject}</span>
-                </div>
-                <div className="mb-2 px-2 py-2 bg-gray-50 rounded text-gray-700 whitespace-pre-line border border-gray-100">
-                  {msg.message}
-                </div>
-                <div className="flex items-center gap-2 mt-2 text-xs text-gray-500 justify-between">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    <span>{new Date(msg.createdAt).toLocaleString()}</span>
-                  </div>
-                  <Button
-                    size="icon"
-                    variant="destructive"
-                    className="text-white bg-red-500 hover:bg-red-600 shadow-md ml-2"
-                    onClick={() => setConfirmDeleteId(msg.id)}
-                    disabled={deletingId === msg.id}
-                    aria-label="Supprimer le message"
-                  >
-                    <Trash2 className="h-5 w-5" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="bg-white p-4 rounded-lg shadow overflow-x-auto">
+          <Table className="min-w-full divide-y divide-gray-200">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom Complet</TableHead>
+                <TableHead className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</TableHead>
+                <TableHead className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</TableHead>
+                <TableHead className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Options</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className="bg-white divide-y divide-gray-200">
+              {messages.map((msg) => (
+                <TableRow key={msg.id} className="hover:bg-gray-50 text-sm">
+                  <TableCell className="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{msg.name}</TableCell>
+                  <TableCell className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{msg.email}</TableCell>
+                  <TableCell className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{new Date(msg.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell className="px-3 py-3 whitespace-nowrap text-right text-sm font-medium">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewMessage(msg)}
+                      aria-label="Voir le message"
+                      className="mr-2"
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      Voir les détails du message
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setConfirmDeleteId(msg.id)}
+                      disabled={deletingId === msg.id}
+                      aria-label="Supprimer le message"
+                    >
+                      {deletingId === msg.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
+      {/* View Message Dialog */}
+      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Détails du Message</DialogTitle>
+          </DialogHeader>
+          {selectedMessage && (
+            <div className="space-y-4 py-4">
+              <div>
+                <p className="text-sm font-medium text-gray-500">De:</p>
+                <p className="font-semibold">{selectedMessage.name} &lt;{selectedMessage.email}&gt;</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Sujet:</p>
+                <p className="font-medium">{selectedMessage.subject}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Envoyé le:</p>
+                <p className="text-sm">{new Date(selectedMessage.createdAt).toLocaleString()}</p>
+              </div>
+              <Separator />
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-1">Message:</p>
+                <div className="bg-gray-50 p-3 rounded-md whitespace-pre-line text-gray-700 border border-gray-100">
+                  {selectedMessage.message}
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCloseViewModal}>Fermer</Button>
+            {selectedMessage && (
+               <Button
+                 variant="destructive"
+                 onClick={() => {
+                   setOrderToDelete(selectedMessage);
+                   handleCloseViewModal(); // Close view modal
+                   setIsDeleteDialogOpen(true); // Open delete confirmation
+                 }}
+                 disabled={deletingId === selectedMessage.id}
+               >
+                 <Trash2 className="h-4 w-4 mr-1" />
+                 Supprimer le message
+               </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog open={!!confirmDeleteId} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
         <DialogContent>
           <DialogHeader>

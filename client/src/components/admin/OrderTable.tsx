@@ -210,66 +210,45 @@ export default function OrderTable({ orders }: OrderTableProps) {
 
   return (
     <>
-      <div className="bg-white rounded-md shadow-sm overflow-hidden">
-        <Table>
+      <div className="bg-white p-4 rounded-lg shadow overflow-x-auto">
+        <Table className="min-w-full divide-y divide-gray-200">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[80px] cursor-pointer select-none" onClick={() => handleSort("id")}>ID {sortBy === "id" && (sortDir === "asc" ? <ChevronUp className="inline h-4 w-4" /> : <ChevronDown className="inline h-4 w-4" />)}</TableHead>
-              <TableHead className="cursor-pointer select-none" onClick={() => handleSort("customerName")}>Client {sortBy === "customerName" && (sortDir === "asc" ? <ChevronUp className="inline h-4 w-4" /> : <ChevronDown className="inline h-4 w-4" />)}</TableHead>
-              <TableHead className="cursor-pointer select-none" onClick={() => handleSort("createdAt")}>Date {sortBy === "createdAt" && (sortDir === "asc" ? <ChevronUp className="inline h-4 w-4" /> : <ChevronDown className="inline h-4 w-4" />)}</TableHead>
-              <TableHead className="cursor-pointer select-none" onClick={() => handleSort("total")}>Total {sortBy === "total" && (sortDir === "asc" ? <ChevronUp className="inline h-4 w-4" /> : <ChevronDown className="inline h-4 w-4" />)}</TableHead>
-              <TableHead className="cursor-pointer select-none" onClick={() => handleSort("status")}>Statut {sortBy === "status" && (sortDir === "asc" ? <ChevronUp className="inline h-4 w-4" /> : <ChevronDown className="inline h-4 w-4" />)}</TableHead>
-              <TableHead className="cursor-pointer select-none" onClick={() => handleSort("paymentMethod")}>Paiement {sortBy === "paymentMethod" && (sortDir === "asc" ? <ChevronUp className="inline h-4 w-4" /> : <ChevronDown className="inline h-4 w-4" />)}</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</TableHead>
+              <TableHead className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</TableHead>
+              <TableHead className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer flex items-center" onClick={() => handleSort("createdAt")}>Date</TableHead>
+              <TableHead className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort("total")}>Total</TableHead>
+              <TableHead className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort("status")}>Statut</TableHead>
+              <TableHead className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort("paymentMethod")}>Paiement</TableHead>
+              <TableHead className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {paginatedOrders.map((order, idx) => {
-              // Friendly display index: 1 for top, 2 for next, etc.
-              const displayIndex = (currentPage - 1) * itemsPerPage + idx + 1;
-              return (
-                <TableRow key={order.id}>
-                  <TableCell className="font-medium">#{displayIndex}</TableCell>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{order.customerName}</div>
-                      <div className="text-sm text-muted-foreground">{order.customerEmail}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{formatDate(order.createdAt)}</TableCell>
-                  <TableCell>{formatPrice(order.total)}</TableCell>
-                  <TableCell>
-                    {getStatusBadge(order.status)}
-                  </TableCell>
-                  <TableCell>
-                    {order.paymentMethod === 'cash_on_delivery' ? 'À la livraison' : 'Carte bancaire'}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewOrder(order)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        Voir
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => {
-                          setOrderToDelete(order);
-                          setIsDeleteDialogOpen(true);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Supprimer
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+          <TableBody className="bg-white divide-y divide-gray-200">
+            {paginatedOrders.map((order) => (
+              <TableRow key={order.id} className="hover:bg-gray-50 text-sm">
+                <TableCell className="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">#{order.id}</TableCell>
+                <TableCell className="px-3 py-3 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">{order.customerName}</div>
+                  <div className="text-sm text-gray-500">{order.customerEmail}</div>
+                </TableCell>
+                <TableCell className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{formatDate(order.createdAt)}</TableCell>
+                <TableCell className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{formatPrice(order.total)}</TableCell>
+                <TableCell className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
+                  {getStatusBadge(order.status)}
+                </TableCell>
+                <TableCell className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{order.paymentMethod === 'credit_card' ? 'Carte de crédit' : order.paymentMethod === 'cash_on_delivery' ? 'Paiement à la livraison' : order.paymentMethod}</TableCell>
+                <TableCell className="px-3 py-3 whitespace-nowrap text-right text-sm font-medium space-x-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleViewOrder(order)}
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    Voir
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
 
@@ -491,6 +470,22 @@ export default function OrderTable({ orders }: OrderTableProps) {
               </Card>
             </div>
           )}
+          {/* Add Delete Button Here */}
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setIsViewOpen(false)}>Fermer</Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setOrderToDelete(selectedOrder);
+                setIsViewOpen(false);
+                setIsDeleteDialogOpen(true);
+              }}
+              disabled={deleteMutation.isPending}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Supprimer la commande
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

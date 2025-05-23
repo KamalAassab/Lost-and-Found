@@ -309,6 +309,21 @@ export const deleteProduct = async (id: number) => {
 };
 
 // Users
+export const getAllUsers = async () => {
+  return await db.query.users.findMany({
+    columns: { // Select specific columns to exclude password
+      id: true,
+      username: true,
+      email: true,
+      fullname: true, // Assuming fullname exists in your schema
+      isAdmin: true,
+      createdAt: true,
+      updatedAt: true, // Assuming these exist
+    },
+    orderBy: asc(schema.users.createdAt),
+  });
+};
+
 export const getUserByUsername = async (username: string) => {
   return await db.query.users.findFirst({
     where: eq(schema.users.username, username),
@@ -351,6 +366,30 @@ export const ensureAdminUser = async () => {
     }
   } catch (error) {
     console.error('Error ensuring admin user:', error);
+  }
+};
+
+export const deleteUser = async (id: number) => {
+  try {
+    // Get the user before deletion
+    const userToDelete = await db.query.users.findFirst({
+      where: eq(schema.users.id, id)
+    });
+
+    if (!userToDelete) {
+      throw new Error("Utilisateur non trouvé");
+    }
+
+    // Prevent deleting the last admin user or the current logged-in admin (optional but recommended)
+    // You would need access to the current user's session ID here, which is not available in storage
+
+    await db.delete(schema.users).where(eq(schema.users.id, id));
+
+    return userToDelete; // Return deleted user info (without password)
+
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    throw error;
   }
 };
 

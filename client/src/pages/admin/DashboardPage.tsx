@@ -133,7 +133,7 @@ export default function DashboardPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Tableau de Bord</h1>
+        <h1 className="text-2xl font-bold">Tableau de Bord</h1>
         
         {/* Stats cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -147,7 +147,7 @@ export default function DashboardPage() {
               {isLoadingOrders ? (
                 <Skeleton className="h-7 w-16" />
               ) : (
-                <div className="text-2xl font-bold">{totalOrders}</div>
+                <div className="text-xl font-bold">{totalOrders}</div>
               )}
               <p className="text-xs text-muted-foreground">
                 +{pendingOrders} en attente
@@ -165,7 +165,7 @@ export default function DashboardPage() {
               {isLoadingProducts ? (
                 <Skeleton className="h-7 w-16" />
               ) : (
-                <div className="text-2xl font-bold">{totalProducts}</div>
+                <div className="text-xl font-bold">{totalProducts}</div>
               )}
               <p className="text-xs text-muted-foreground">
                 {hoodieCount} hoodies, {tshirtCount} t-shirts
@@ -183,7 +183,7 @@ export default function DashboardPage() {
               {isLoadingOrders ? (
                 <Skeleton className="h-7 w-24" />
               ) : (
-                <div className="text-2xl font-bold">{formatPrice(totalRevenue)}</div>
+                <div className="text-xl font-bold">{formatPrice(totalRevenue)}</div>
               )}
               <p className="text-xs text-muted-foreground">
                 +{orders.filter((order: any) => order.status === 'delivered').length || 0} commandes livrées
@@ -198,7 +198,7 @@ export default function DashboardPage() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{averageVisitorsPerDay}</div>
+              <div className="text-xl font-bold">{averageVisitorsPerDay}</div>
               <p className="text-xs text-muted-foreground">Toujours plus de 0 visiteurs !</p>
             </CardContent>
           </Card>
