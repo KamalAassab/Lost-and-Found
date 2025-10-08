@@ -52,13 +52,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
       } catch (error) {
         console.error("Auth check error:", error);
+        // For static deployment (GitHub Pages), just set user to null
         setUser(null);
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkAuth();
+    // Skip auth check for static deployment
+    if (window.location.hostname === 'kamalaassab.github.io') {
+      setIsLoading(false);
+      setUser(null);
+    } else {
+      checkAuth();
+    }
   }, []);
 
   const login = async (username: string, password: string): Promise<boolean> => {
