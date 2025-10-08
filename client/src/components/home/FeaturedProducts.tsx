@@ -100,22 +100,22 @@ export default function FeaturedProducts() {
         <div className="relative">
           {canScrollLeft && (
             <button
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black hover:bg-black/90 text-white rounded-full p-2 shadow-lg"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black hover:bg-black/90 text-white rounded-full p-1.5 shadow-lg"
               style={{ transform: 'translateY(-50%) translateX(-50%)' }}
               onClick={() => scrollBy(-300)}
               aria-label="Scroll left"
             >
-              <ChevronLeft className="h-6 w-6" />
+              <ChevronLeft className="h-5 w-5" />
             </button>
           )}
           {canScrollRight && (
             <button
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black hover:bg-black/90 text-white rounded-full p-2 shadow-lg"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black hover:bg-black/90 text-white rounded-full p-1.5 shadow-lg"
               style={{ transform: 'translateY(-50%) translateX(50%)' }}
               onClick={() => scrollBy(300)}
               aria-label="Scroll right"
             >
-              <ChevronRight className="h-6 w-6" />
+              <ChevronRight className="h-5 w-5" />
             </button>
           )}
         {isLoading ? (

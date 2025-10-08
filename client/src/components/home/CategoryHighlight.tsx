@@ -4,40 +4,43 @@ import CategoryCard from "@/components/CategoryCard";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CategoryHighlight() {
-  const { data: categories, isLoading, error } = useQuery({ 
+  const { data, isLoading, error } = useQuery({
     queryKey: ['/api/categories'],
   });
 
+  const categories = Array.isArray(data) ? data : [];
+
   if (isLoading) {
     return (
-      <section className="py-16 px-4 bg-white">
+      <section className="py-12 px-4 bg-white">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold font-montserrat uppercase mb-2 text-center">
+          <h2 className="text-2xl font-bold font-montserrat uppercase mb-2 text-center">
             Nos Catégories
           </h2>
-          <p className="text-neutral-700 text-center mb-12">
+          <p className="text-neutral-700 text-center mb-10 text-sm">
             Explorez notre collection de vêtements streetwear de qualité supérieure
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Skeleton className="h-[400px] w-full" />
-            <Skeleton className="h-[400px] w-full" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Skeleton className="h-[300px] w-full" />
+            <Skeleton className="h-[300px] w-full" />
           </div>
         </div>
       </section>
     );
   }
 
-  if (error || !categories) {
+  if (error) {
+    // Display default cards if there's an error fetching categories
     return (
-      <section className="py-16 px-4 bg-white">
+      <section className="py-12 px-4 bg-white">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold font-montserrat uppercase mb-2 text-center">
+          <h2 className="text-2xl font-bold font-montserrat uppercase mb-2 text-center">
             Nos Catégories
           </h2>
-          <p className="text-neutral-700 text-center mb-12">
+          <p className="text-neutral-700 text-center mb-10 text-sm">
             Explorez notre collection de vêtements streetwear de qualité supérieure
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <CategoryCard
               title="Hoodies"
               description="À partir de 199 MAD"
@@ -57,34 +60,30 @@ export default function CategoryHighlight() {
   }
 
   return (
-    <section className="py-16 px-4 bg-white">
+    <section className="py-12 px-4 bg-white">
       <div className="container mx-auto">
-        <h2 className="text-3xl font-bold font-montserrat uppercase mb-2 text-center">
+        <h2 className="text-2xl font-bold font-montserrat uppercase mb-2 text-center">
           Nos Catégories
         </h2>
-        <p className="text-neutral-700 text-center mb-12">
+        <p className="text-neutral-700 text-center mb-10 text-sm">
           Explorez notre collection de vêtements streetwear de qualité supérieure
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {(Array.isArray(categories) ? categories : []).map((category: any) => (
-            <CategoryCard
-              key={category.id}
-              title={category.name}
-              description={
-                category.slug === "hoodies"
-                  ? "À partir de 199 MAD"
-                  : "À partir de 120 MAD"
-              }
-              imageUrl={
-                category.backgroundImageUrl
-                  ? category.backgroundImageUrl
-                  : category.slug === "hoodies"
-                    ? "/hoodie.jpg"
-                    : "/tshirt.jpg"
-              }
-              slug={category.name.toLowerCase().replace(/\s|-/g, "") === "tshirts" ? "tshirts" : category.slug}
-            />
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {categories.map((category: any) => {
+            // Adjust slug for navigation if it's 't-shirts'
+            const adjustedSlug = category.slug === 't-shirts' ? 'tshirts' : category.slug;
+
+            console.log('Category object:', category);
+            return (
+              <CategoryCard
+                key={category.slug}
+                title={category.name}
+                description={category.description}
+                imageUrl={category.backgroundImageUrl || '/placeholder-category.jpg'}
+                slug={adjustedSlug} // Use the adjusted slug for navigation
+              />
+            );
+          })}
         </div>
       </div>
     </section>

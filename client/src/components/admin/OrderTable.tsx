@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatDate } from "@/lib/utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, ChevronRight, Eye, RefreshCw, Trash2, ChevronUp, ChevronDown } from "lucide-react";
@@ -166,18 +166,6 @@ export default function OrderTable({ orders }: OrderTableProps) {
     setCurrentPage(page);
   };
 
-  // Format date
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('fr-FR', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(date);
-  };
-
   // Get badge color based on status
   const getStatusBadge = (status: string) => {
     switch(status) {
@@ -224,9 +212,11 @@ export default function OrderTable({ orders }: OrderTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody className="bg-white divide-y divide-gray-200">
-            {paginatedOrders.map((order) => (
+            {paginatedOrders.map((order, index) => (
               <TableRow key={order.id} className="hover:bg-gray-50 text-sm">
-                <TableCell className="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">#{order.id}</TableCell>
+                <TableCell className="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {(currentPage - 1) * itemsPerPage + index + 1}
+                </TableCell>
                 <TableCell className="px-3 py-3 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">{order.customerName}</div>
                   <div className="text-sm text-gray-500">{order.customerEmail}</div>
@@ -312,7 +302,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
         <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle>
-              Détails de la commande #
+              Détails de la commande{' '}
               {(() => {
                 if (!selectedOrder) return '';
                 // Sort orders by creation date (oldest first)

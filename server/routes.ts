@@ -14,6 +14,7 @@ import path from 'path';
 import { requireAdmin } from './middleware';
 import { eq, and, desc } from "drizzle-orm";
 import { createOrder, isShippingFree } from "./storage";
+import nodemailer from "nodemailer";
 
 const JWT_SECRET = process.env.JWT_SECRET || "lost_and_found_secret_key";
 
@@ -51,6 +52,112 @@ const upload = multer({
 });
 
 const { getCategoryById } = storageService;
+
+// Utility functions for order total and shipping
+function calculateOrderTotal(items: any[]) {
+  if (!Array.isArray(items)) return 0;
+  return items.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0);
+}
+
+// Utility function to send order confirmation email
+async function sendOrderConfirmationEmail(to: string, order: any) {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: "kamalaassab2002@gmail.com", // Replace with your Gmail address
+      pass: "osqonuttgeaykeci", // Your Gmail app password
+    },
+  });
+
+  // Generate product rows HTML
+  const productRowsHtml = (order.items && order.items.length > 0)
+    ? order.items.map((item: any) => `
+        <tr>
+          <td style="padding: 8px 0; border-bottom: 1px solid #f3f3f3;">${item.product?.name || item.name || 'Produit'}</td>
+          <td align="center" style="padding: 8px 0; border-bottom: 1px solid #f3f3f3;">${item.size || '-'}</td>
+          <td align="center" style="padding: 8px 0; border-bottom: 1px solid #f3f3f3;">${item.quantity}</td>
+          <td align="right" style="padding: 8px 0; border-bottom: 1px solid #f3f3f3;">${item.price} MAD</td>
+        </tr>
+      `).join('')
+    : `<tr><td colspan="4" style="padding: 8px 0; text-align: center; color: #888;">Aucun produit</td></tr>`;
+
+  const mailOptions = {
+    from: '"LOST & FOUND" <kamalaassab2002@gmail.com>',
+    to,
+    subject: "Merci pour votre commande chez LOST & FOUND !",
+    text: `Merci pour votre commande !`,
+    html: `
+      <div style="font-family: 'Montserrat', Arial, sans-serif; background: #f4f4f4; padding: 0; margin: 0;">
+        <table width="100%" bgcolor="#f4f4f4" cellpadding="0" cellspacing="0" style="padding: 40px 0;">
+          <tr>
+            <td align="center">
+              <table width="520" bgcolor="#fff" cellpadding="0" cellspacing="0" style="border-radius: 16px; box-shadow: 0 2px 16px rgba(0,0,0,0.06); padding: 0 0 32px 0;">
+                <tr>
+                  <td align="center" style="padding: 32px 32px 0 32px;">
+                    <img src="https://drive.google.com/uc?export=view&id=1BlbWh9gDDR-Eo2o87R5rikaftkAVmSTk" alt="LOST & FOUND" style="height: 48px; margin-bottom: 8px;" />
+                    <h1 style="font-size: 2rem; color: #181818; margin: 0 0 8px 0;">Merci pour votre commande !</h1>
+                    <p style="font-size: 1.1rem; color: #333; margin: 0 0 16px 0;">
+                      Bonjour,<br>
+                      Nous avons bien reçu votre commande.<br>
+                      <span style="color: #00c49f; font-weight: bold; font-size: 0.9rem;">Vous faites désormais partie de la famille LOST & FOUND !</span>
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0 32px;">
+                    <div style="background: #f3f3f3; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                      <strong style="color: #181818;">Détails de la commande :</strong><br>
+                      <span>Date : ${order.createdAt ? new Date(order.createdAt).toLocaleDateString() : ''}</span><br>
+                      <span>Frais de livraison : <b>${order.free_shipping ? 'Gratuit' : '50 MAD'}</b></span><br>
+                      <span>Total : <b>${order.free_shipping ? order.total : order.total + 50} MAD</b></span>
+                    </div>
+                    <div style="margin-bottom: 24px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                        <thead>
+                          <tr>
+                            <th align="left" style="padding: 8px 0; border-bottom: 1px solid #eee; color: #181818;">Produit</th>
+                            <th align="center" style="padding: 8px 0; border-bottom: 1px solid #eee; color: #181818;">Taille</th>
+                            <th align="center" style="padding: 8px 0; border-bottom: 1px solid #eee; color: #181818;">Quantité</th>
+                            <th align="right" style="padding: 8px 0; border-bottom: 1px solid #eee; color: #181818;">Prix</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          ${productRowsHtml}
+                        </tbody>
+                      </table>
+                    </div>
+                    <p style="font-size: 1rem; color: #333; margin-bottom: 24px;">
+                      Nous préparons votre commande avec soin. Vous recevrez un email dès qu'elle sera expédiée.
+                    </p>
+                    <div style="text-align: center; margin-bottom: 24px;">
+                      <a href="https://lostandfound.ma/products" style="display: inline-block; background: #00c49f; color: #fff; text-decoration: none; padding: 14px 36px; border-radius: 6px; font-weight: bold; letter-spacing: 1px; font-size: 1.1rem;">Commander à nouveau</a>
+                    </div>
+                    <div style="text-align: center; margin-bottom: 24px;">
+                      <span style="color: #888; font-size: 0.95rem;">Suivez-nous :</span><br>
+                      <a href="https://instagram.com/lostandfound_vision" style="margin: 0 8px;"><img src="https://cdn-icons-png.flaticon.com/24/2111/2111463.png" alt="Instagram" style="vertical-align: middle;" /></a>
+                    </div>
+                    <div style="background: #f9f9f9; border-radius: 8px; padding: 12px; text-align: center; color: #888; font-size: 0.95rem;">
+                      Besoin d'aide ? Contactez-nous à <a href="mailto:support@lostandfound.ma" style="color: #00c49f;">support@lostandfound.ma</a>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding: 32px 0 0 0; color: #aaa; font-size: 0.9rem;">
+                    LOST & FOUND, Settat, Maroc<br>
+                    © ${new Date().getFullYear()} LOST & FOUND. Tous droits réservés.<br>
+                    <a href="https://lostandfound.ma/unsubscribe" style="color: #aaa; text-decoration: underline;">Se désabonner</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Add express.json() middleware to parse JSON bodies
@@ -373,7 +480,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         postalCode,
         paymentMethod,
         items,
-        promoApplied
       } = req.body;
       
       // Calculate total and free_shipping on the backend
@@ -391,11 +497,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           postalCode,
           paymentMethod,
           total,
-          free_shipping,
-          promoApplied
+          free_shipping
         },
         items || []
       );
+
+      // Send confirmation email
+      await sendOrderConfirmationEmail(customerEmail, order);
 
       res.json({ order });
     } catch (error) {
@@ -708,7 +816,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Utilisateur non trouvé" });
       }
       // Do NOT return the password hash of the deleted user
-      const { password, ...deletedUserWithoutPassword } = deletedUser;
+      const { password, ...deletedUserWithoutPassword } = deletedUser as schema.User; // Explicitly cast to User
       res.json({ message: "Utilisateur supprimé avec succès", user: deletedUserWithoutPassword });
     } catch (error) {
       console.error("Error deleting user:", error);

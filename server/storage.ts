@@ -7,6 +7,14 @@ import type { ProductInsert } from '../shared/schema';
 // Categories
 export const getAllCategories = async () => {
   return await db.query.categories.findMany({
+    columns: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      backgroundImageUrl: true,
+      createdAt: true,
+    },
     orderBy: asc(schema.categories.name),
   });
 };
@@ -50,7 +58,7 @@ export const createCategory = async (data: schema.CategoryInsert) => {
     }
 
     return category;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating category:", error);
     throw new Error(`Error creating category: ${error.message}`);
   }
@@ -84,7 +92,7 @@ export const updateCategory = async (id: number, data: Partial<schema.CategoryIn
       where: eq(schema.categories.id, id),
     });
   return category;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error updating category:", error);
     throw error;
   }
@@ -106,7 +114,7 @@ export const deleteCategory = async (id: number) => {
       .where(eq(schema.categories.id, id));
 
   return category;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error deleting category:", error);
     throw error;
   }
@@ -118,14 +126,14 @@ export const getAllProducts = async (
   search?: string,
   featured?: boolean
 ) => {
-  let query = db.select().from(schema.products);
+  const conditions = [];
 
   if (category) {
-    query = query.where(eq(schema.products.category, category as any));
+    conditions.push(eq(schema.products.category, category as 'hoodies' | 'tshirts'));
   }
 
   if (search) {
-    query = query.where(
+    conditions.push(
       or(
         like(schema.products.name, `%${search}%`),
         like(schema.products.description, `%${search}%`)
@@ -134,10 +142,13 @@ export const getAllProducts = async (
   }
 
   if (featured !== undefined) {
-    query = query.where(eq(schema.products.featured, featured));
+    conditions.push(eq(schema.products.featured, featured));
   }
 
-  return await query.orderBy(desc(schema.products.createdAt));
+  return await db.query.products.findMany({
+    where: conditions.length > 0 ? and(...conditions) : undefined,
+    orderBy: desc(schema.products.createdAt),
+  });
 };
 
 export const getProductBySlug = async (slug: string) => {
@@ -208,7 +219,7 @@ export async function createProduct(data: ProductInsert) {
     
     console.log('Created product:', createdProduct);
     return createdProduct;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating product:", error);
     throw new Error(`Error creating product: ${error.message}`);
   }
@@ -264,7 +275,7 @@ export async function updateProduct(id: number, data: Partial<ProductInsert>) {
     });
 
     return updatedProduct;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error updating product:", error);
     throw error;
   }
@@ -281,29 +292,13 @@ export const deleteProduct = async (id: number) => {
       throw new Error("Produit non trouvé");
     }
 
-    // Use a transaction to ensure both deletions succeed or fail together
-    await db.transaction(async (tx) => {
-      // First delete any related order items
-      await tx.delete(schema.orderItems)
-        .where(eq(schema.orderItems.productId, id));
+    // Delete the product
+    await db.delete(schema.products)
+      .where(eq(schema.products.id, id));
 
-      // Then delete the product
-      await tx.delete(schema.products)
-        .where(eq(schema.products.id, id));
-    });
-
-  return product;
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error deleting product:", error.message);
-      if (error.stack) console.error(error.stack);
-      // Check for MySQL foreign key or constraint errors
-      if (error.message.includes('foreign key') || error.message.includes('constraint')) {
-        throw new Error("Impossible de supprimer ce produit car il est lié à d'autres données (commandes, etc.)");
-      }
-    } else {
-      console.error("Unknown error deleting product:", error);
-    }
+    return product;
+  } catch (error: any) {
+    console.error("Error deleting product:", error);
     throw error;
   }
 };
@@ -318,7 +313,6 @@ export const getAllUsers = async () => {
       fullname: true, // Assuming fullname exists in your schema
       isAdmin: true,
       createdAt: true,
-      updatedAt: true, // Assuming these exist
     },
     orderBy: asc(schema.users.createdAt),
   });
@@ -371,23 +365,37 @@ export const ensureAdminUser = async () => {
 
 export const deleteUser = async (id: number) => {
   try {
-    // Get the user before deletion
+    // Get the user before deletion, explicitly selecting all columns including password
     const userToDelete = await db.query.users.findFirst({
-      where: eq(schema.users.id, id)
+      where: eq(schema.users.id, id),
+      columns: { // Explicitly select all columns
+        id: true,
+        username: true,
+        email: true,
+        phone: true,
+        address: true,
+        fullname: true,
+        city: true,
+        postalCode: true,
+        password: true, // Ensure password is selected
+        isAdmin: true,
+        createdAt: true,
+      },
     });
 
     if (!userToDelete) {
       throw new Error("Utilisateur non trouvé");
     }
 
-    // Prevent deleting the last admin user or the current logged-in admin (optional but recommended)
-    // You would need access to the current user's session ID here, which is not available in storage
+    // Delete associated wishlist items first
+    await db.delete(schema.wishlists).where(eq(schema.wishlists.userId, id));
 
+    // Now delete the user
     await db.delete(schema.users).where(eq(schema.users.id, id));
 
-    return userToDelete; // Return deleted user info (without password)
+    return userToDelete; // Return deleted user info (now guaranteed to have password for destructuring)
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error deleting user:", error);
     throw error;
   }
@@ -486,7 +494,7 @@ export const createMessage = async (data: schema.MessageInsert) => {
       orderBy: desc(schema.messages.createdAt)
     });
     return message;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating message:", error);
     throw new Error(`Error creating message: ${error.message}`);
   }
@@ -526,7 +534,7 @@ export const deleteMessage = async (id: number) => {
     console.log('Verification after deletion:', verifyDeletion);
 
     return message;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error deleting message:", error);
     throw error;
   }

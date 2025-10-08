@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Trash2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { formatDate } from '@/lib/utils';
 
 interface User {
   id: number;
@@ -95,7 +96,7 @@ export default function AdminUsersPage() {
                   <TableCell>{user.fullname || 'N/A'}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.isAdmin ? 'Oui' : 'Non'}</TableCell>
-                  <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>{formatDate(user.createdAt)}</TableCell>
                   <TableCell>
                     {!user.isAdmin && ( // Prevent deleting admin users via this interface
                       <Button 

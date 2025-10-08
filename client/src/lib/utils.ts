@@ -12,7 +12,9 @@ export function formatPrice(price: number | string) {
     currency: 'MAD',
     maximumFractionDigits: 0,
     minimumFractionDigits: 0,
-  }).format(numPrice);
+    useGrouping: true,
+    currencyDisplay: 'narrowSymbol'
+  }).format(numPrice).replace(/\s/g, ' ').replace(/\./g, ' ');
 }
 
 export function createSlug(text: string) {
@@ -67,3 +69,12 @@ export function applyTshirtPromotion(items: any[]) {
 export function hasValue<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined;
 }
+
+export const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  }).format(date);
+};

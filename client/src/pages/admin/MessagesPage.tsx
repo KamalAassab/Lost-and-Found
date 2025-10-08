@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { formatDate } from "@/lib/utils";
 
 interface Message {
   id: number;
@@ -113,7 +114,7 @@ function MessagesPageContent() {
                 <TableRow key={msg.id} className="hover:bg-gray-50 text-sm">
                   <TableCell className="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{msg.name}</TableCell>
                   <TableCell className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{msg.email}</TableCell>
-                  <TableCell className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{new Date(msg.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">{formatDate(msg.createdAt)}</TableCell>
                   <TableCell className="px-3 py-3 whitespace-nowrap text-right text-sm font-medium">
                     <Button
                       variant="outline"
@@ -145,52 +146,73 @@ function MessagesPageContent() {
           </Table>
         </div>
       )}
-      {/* View Message Dialog */}
+      {/* Message Details Dialog */}
       <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-        <DialogContent className="sm:max-w-xl">
+        <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Détails du Message</DialogTitle>
+            <DialogTitle className="text-lg font-bold">Détails du Message</DialogTitle>
           </DialogHeader>
           {selectedMessage && (
-            <div className="space-y-4 py-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500">De:</p>
-                <p className="font-semibold">{selectedMessage.name} &lt;{selectedMessage.email}&gt;</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Sujet:</p>
-                <p className="font-medium">{selectedMessage.subject}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Envoyé le:</p>
-                <p className="text-sm">{new Date(selectedMessage.createdAt).toLocaleString()}</p>
-              </div>
-              <Separator />
-              <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Message:</p>
-                <div className="bg-gray-50 p-3 rounded-md whitespace-pre-line text-gray-700 border border-gray-100">
-                  {selectedMessage.message}
+            <div className="space-y-4 py-2">
+              {/* Header Section */}
+              <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+                <div className="flex items-start gap-2">
+                  <User className="h-4 w-4 text-primary mt-0.5" />
+                  <p className="text-sm text-gray-700">{selectedMessage.name}</p>
                 </div>
+                <div className="flex items-start gap-2">
+                  <Mail className="h-4 w-4 text-gray-500 mt-0.5" />
+                  <p className="text-sm text-gray-500">{selectedMessage.email}</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Calendar className="h-4 w-4 text-primary mt-0.5" />
+                  <p className="text-sm text-gray-600">{formatDate(selectedMessage.createdAt)}</p>
+                </div>
+              </div>
+
+              {/* Subject Section */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="h-4 w-4 text-primary" />
+                  <h4 className="font-semibold text-sm">Sujet</h4>
+                </div>
+                <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded-lg">{selectedMessage.subject}</p>
+              </div>
+
+              {/* Message Content Section */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-primary" />
+                  <h4 className="font-semibold text-sm">Message</h4>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedMessage.message}</p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsViewModalOpen(false)}
+                >
+                  Fermer
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    setConfirmDeleteId(selectedMessage.id);
+                    setIsViewModalOpen(false);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Supprimer
+                </Button>
               </div>
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCloseViewModal}>Fermer</Button>
-            {selectedMessage && (
-               <Button
-                 variant="destructive"
-                 onClick={() => {
-                   setOrderToDelete(selectedMessage);
-                   handleCloseViewModal(); // Close view modal
-                   setIsDeleteDialogOpen(true); // Open delete confirmation
-                 }}
-                 disabled={deletingId === selectedMessage.id}
-               >
-                 <Trash2 className="h-4 w-4 mr-1" />
-                 Supprimer le message
-               </Button>
-            )}
-          </DialogFooter>
         </DialogContent>
       </Dialog>
       <Dialog open={!!confirmDeleteId} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>

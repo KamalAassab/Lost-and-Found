@@ -17,16 +17,7 @@ import {
   Cell, 
   Legend
 } from "recharts";
-import { formatPrice } from "@/lib/utils";
-
-// Helper function to format date
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('fr-FR', { 
-    month: 'short', 
-    day: 'numeric' 
-  }).format(date);
-};
+import { formatPrice, formatDate } from "@/lib/utils";
 
 // Helper function to group orders by status
 const groupOrdersByStatus = (orders: any[]) => {

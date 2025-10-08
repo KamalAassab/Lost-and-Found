@@ -59,8 +59,10 @@ export default function SuccessPage() {
               transition={{ duration: 0.5, delay: 0.4 }}
               className="text-lg text-gray-600 mb-8"
             >
-              Votre commande a été reçue et est en cours de traitement. Vous recevrez un email 
-              de confirmation avec tous les détails.
+              Votre commande a été reçue et est en cours de traitement.<br />
+              <span className="font-semibold text-green-700">
+                Un email de confirmation vous a été envoyé. Merci de vérifier votre boîte de réception.
+              </span>
             </motion.p>
             
             <motion.div 

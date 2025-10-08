@@ -247,6 +247,10 @@ export default function AccountDashboard() {
                     <div className="grid grid-cols-1 gap-2">
                       <div className="relative w-full flex items-center gap-2">
                         <User className="h-5 w-5 text-primary absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <Input value={userInfo.username || ""} onChange={e => setUserInfo({ ...userInfo, username: e.target.value })} placeholder="Nom d'utilisateur" className="border rounded pl-10 py-2 w-full pr-8 bg-neutral-50 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary" />
+                      </div>
+                      <div className="relative w-full flex items-center gap-2">
+                        <User className="h-5 w-5 text-primary absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                         <Input value={userInfo.fullname || ""} onChange={e => setUserInfo({ ...userInfo, fullname: e.target.value })} placeholder="Nom complet" className="border rounded pl-10 py-2 w-full pr-8 bg-neutral-50 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary" />
                       </div>
                       <div className="relative w-full flex items-center gap-2">
@@ -335,6 +339,11 @@ export default function AccountDashboard() {
               </div>
             ) : (
                   <div className="space-y-4 text-gray-700">
+                    <div className="flex items-center gap-3">
+                      <User className="h-4 w-4 text-primary" />
+                      <span className="font-medium text-base">@{userInfo.username || <span className='text-gray-400'>Nom d'utilisateur non renseigné</span>}</span>
+                    </div>
+                    <hr className="my-1 border-neutral-200" />
                     <div className="flex items-center gap-3">
                       <User className="h-4 w-4 text-primary" />
                       <span className="font-medium text-base">{userInfo.fullname || <span className='text-gray-400'>Nom complet non renseigné</span>}</span>
