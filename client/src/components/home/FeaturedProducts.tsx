@@ -14,6 +14,7 @@ export default function FeaturedProducts() {
 
   const { data: products, isLoading, error } = useQuery({
     queryKey: ['/api/products', { featured: true }],
+    enabled: window.location.hostname !== 'kamalaassab.github.io', // Disable for static deployment
   });
 
   const filteredProducts = Array.isArray(products)

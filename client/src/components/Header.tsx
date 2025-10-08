@@ -27,6 +27,7 @@ export default function Header({ toggleCart }: HeaderProps) {
   // Fetch all products for search
   const { data: products = [] } = useQuery({
     queryKey: ["/api/products"],
+    enabled: window.location.hostname !== 'kamalaassab.github.io', // Disable for static deployment
   });
 
   // Filter products by search query

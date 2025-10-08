@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function CategoryHighlight() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['/api/categories'],
+    enabled: window.location.hostname !== 'kamalaassab.github.io', // Disable for static deployment
   });
 
   const categories = Array.isArray(data) ? data : [];
