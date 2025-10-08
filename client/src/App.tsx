@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Router } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -30,49 +30,53 @@ import TermsPage from "@/pages/TermsPage";
 import PrivacyPage from "@/pages/PrivacyPage";
 import AdminUsersPage from "@/pages/admin/AdminUsersPage";
 
-function Router() {
+function AppRouter() {
+  const base = window.location.hostname === 'kamalaassab.github.io' ? '/Lost-and-Found' : '';
+  
   return (
-    <Switch>
-      {/* Customer facing routes */}
-      <Route path="/" component={HomePage} />
-      <Route path="/products" component={ProductsPage} />
-      <Route path="/products/:category" component={ProductsPage} />
-      <Route path="/product/:slug" component={ProductDetailPage} />
-      <Route path="/checkout" component={CheckoutPage} />
-      <Route path="/success" component={SuccessPage} />
-      <Route path="/signup" component={SignupPage} />
-      <Route path="/cart" component={CartPage} />
-      
-      {/* Auth routes */}
-      <Route path="/login" component={LoginPage} />
-      <Route path="/admin" component={LoginPage} />
-      <Route path="/account" component={AccountDashboard} />
-      
-      {/* Admin routes */}
-      <Route path="/admin/dashboard" component={DashboardPage} />
-      <Route path="/admin/products" component={AdminProductsPage} />
-      <Route path="/admin/orders" component={AdminOrdersPage} />
-      <Route path="/admin/categories" component={AdminCategoriesPage} />
-      <Route path="/admin/messages" component={MessagesPage} />
-      <Route path="/admin/users" component={AdminUsersPage} />
-      
-      {/* Support routes */}
-      <Route path="/support/faq" component={FAQPage} />
-      <Route path="/support/livraison" component={ShippingPage} />
-      <Route path="/support/retours" component={ReturnsPage} />
-      <Route path="/support/tailles" component={SizesPage} />
-      <Route path="/support/contact" component={ContactPage} />
-      
-      {/* Recover route */}
-      <Route path="/recover" component={RecoverPage} />
-      
-      {/* Legal pages */}
-      <Route path="/terms" component={TermsPage} />
-      <Route path="/privacy" component={PrivacyPage} />
-      
-      {/* Fallback to 404 */}
-      <Route component={NotFound} />
-    </Switch>
+    <Router base={base}>
+      <Switch>
+        {/* Customer facing routes */}
+        <Route path="/" component={HomePage} />
+        <Route path="/products" component={ProductsPage} />
+        <Route path="/products/:category" component={ProductsPage} />
+        <Route path="/product/:slug" component={ProductDetailPage} />
+        <Route path="/checkout" component={CheckoutPage} />
+        <Route path="/success" component={SuccessPage} />
+        <Route path="/signup" component={SignupPage} />
+        <Route path="/cart" component={CartPage} />
+        
+        {/* Auth routes */}
+        <Route path="/login" component={LoginPage} />
+        <Route path="/admin" component={LoginPage} />
+        <Route path="/account" component={AccountDashboard} />
+        
+        {/* Admin routes */}
+        <Route path="/admin/dashboard" component={DashboardPage} />
+        <Route path="/admin/products" component={AdminProductsPage} />
+        <Route path="/admin/orders" component={AdminOrdersPage} />
+        <Route path="/admin/categories" component={AdminCategoriesPage} />
+        <Route path="/admin/messages" component={MessagesPage} />
+        <Route path="/admin/users" component={AdminUsersPage} />
+        
+        {/* Support routes */}
+        <Route path="/support/faq" component={FAQPage} />
+        <Route path="/support/livraison" component={ShippingPage} />
+        <Route path="/support/retours" component={ReturnsPage} />
+        <Route path="/support/tailles" component={SizesPage} />
+        <Route path="/support/contact" component={ContactPage} />
+        
+        {/* Recover route */}
+        <Route path="/recover" component={RecoverPage} />
+        
+        {/* Legal pages */}
+        <Route path="/terms" component={TermsPage} />
+        <Route path="/privacy" component={PrivacyPage} />
+        
+        {/* Fallback to 404 */}
+        <Route component={NotFound} />
+      </Switch>
+    </Router>
   );
 }
 
@@ -97,7 +101,7 @@ function AppWithAuthLoading() {
   }
   return (
     <CartProvider>
-      <Router />
+      <AppRouter />
       <Toaster />
     </CartProvider>
   );
