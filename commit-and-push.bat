@@ -1,9 +1,0 @@
-@echo off
-echo Adding files to git...
-git add .
-echo Committing changes...
-git commit -m "🔧 Fix GitHub Pages deployment with official GitHub Pages actions and proper permissions"
-echo Pushing to GitHub...
-git push origin main
-echo Done!
-pause
