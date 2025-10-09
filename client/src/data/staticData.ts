@@ -19,7 +19,7 @@ export const staticCategories = [
 ];
 
 export const staticProducts = [
-  // Your REAL products from MySQL database
+  // Your REAL products from MySQL database - Updated with current data
   {
     id: 1,
     name: "Eerie Soldier Hoodie",
@@ -32,7 +32,7 @@ export const staticProducts = [
     categoryId: 1,
     inStock: true,
     sizes: ["M", "L", "XL", "XXL"],
-    featured: true,
+    featured: false,
     createdAt: "2025-05-09T01:37:53.000Z"
   },
   {
@@ -47,7 +47,7 @@ export const staticProducts = [
     categoryId: 1,
     inStock: true,
     sizes: ["S", "M", "L", "XL", "XXL"],
-    featured: true,
+    featured: false,
     createdAt: "2025-05-09T01:52:47.000Z"
   },
   {
@@ -62,7 +62,7 @@ export const staticProducts = [
     categoryId: 1,
     inStock: true,
     sizes: ["M", "XL", "L"],
-    featured: true,
+    featured: false,
     createdAt: "2025-05-09T02:27:14.000Z"
   },
   {
@@ -109,7 +109,7 @@ export const staticProducts = [
     categoryId: 2,
     inStock: true,
     sizes: ["M", "L", "XL", "XXL", "S", "XS"],
-    featured: true,
+    featured: false,
     createdAt: "2025-05-09T02:32:09.000Z"
   },
   {
@@ -124,7 +124,7 @@ export const staticProducts = [
     categoryId: 2,
     inStock: true,
     sizes: ["S", "M", "L", "XL", "XXL", "XS"],
-    featured: true,
+    featured: false,
     createdAt: "2025-05-09T03:14:12.000Z"
   },
   {
