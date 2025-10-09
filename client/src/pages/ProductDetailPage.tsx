@@ -12,7 +12,6 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/context/AuthContext";
 import { AuthPopup } from "@/components/auth/AuthPopup";
-import { staticProducts } from "@/data/staticData";
 
 // Define product interface for stronger typing
 interface Product {
@@ -43,29 +42,24 @@ export default function ProductDetailPage() {
   const [showAuthPopup, setShowAuthPopup] = useState(false);
 
   // Check if this is static deployment
-  const isStaticDeployment = window.location.hostname === 'kamalaassab.github.io';
 
   // Fetch product details
   const { data: apiProduct, isLoading: isLoadingProduct } = useQuery<Product>({
     queryKey: [`/api/products/${slug}`],
-    enabled: !!slug && !isStaticDeployment,
+    enabled: !!slug,
   });
 
-  // Get product from static data or API
-  const product = isStaticDeployment 
-    ? staticProducts.find(p => p.slug === slug)
-    : apiProduct;
+  // Get product from API
+  const product = apiProduct;
 
   // Fetch related products
   const { data: apiRelatedProducts = [], isLoading: isLoadingRelated } = useQuery<Product[]>({
     queryKey: ['/api/products', { category: product?.category }],
-    enabled: !!product?.category && !isStaticDeployment,
+    enabled: !!product?.category,
   });
 
-  // Get related products from static data or API
-  const relatedProducts = isStaticDeployment
-    ? staticProducts.filter(p => p.category === product?.category && p.id !== product?.id).slice(0, 4)
-    : apiRelatedProducts;
+  // Get related products from API
+  const relatedProducts = apiRelatedProducts;
 
   // Set page title
   React.useEffect(() => {
@@ -99,7 +93,7 @@ export default function ProductDetailPage() {
       size: selectedSize,
       price: Number(product.price),
       name: product.name,
-      imageUrl: window.location.hostname === 'kamalaassab.github.io' ? `/${product.image}` : `/uploads/${product.image}`,
+      imageUrl: `/uploads/${product.image}`,
       category: categoryValue
     });
   };
@@ -236,7 +230,7 @@ export default function ProductDetailPage() {
               </div>
             )}
             <img
-              src={window.location.hostname === 'kamalaassab.github.io' ? `/${product.image}` : `/uploads/${product.image}`}
+              src={`/uploads/${product.image}`}
               alt={product.name}
               className="w-full h-auto object-cover"
             />

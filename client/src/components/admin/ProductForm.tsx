@@ -89,7 +89,7 @@ interface ProductPayload {
 export default function ProductForm({ product, categories, onClose }: ProductFormProps) {
   const { toast } = useToast();
   const [isGeneratingSlug, setIsGeneratingSlug] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(product ? (window.location.hostname === 'kamalaassab.github.io' ? `/${product.image}` : `/uploads/${product.image}`) : null);
+  const [imagePreview, setImagePreview] = useState<string | null>(product ? `/uploads/${product.image}` : null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
   // Available sizes

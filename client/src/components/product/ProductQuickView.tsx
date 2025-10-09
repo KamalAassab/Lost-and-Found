@@ -87,7 +87,7 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
       size: selectedSize,
       price: Number(product.price),
       name: product.name,
-      imageUrl: window.location.hostname === 'kamalaassab.github.io' ? `/${product.image}` : `/uploads/${product.image}`,
+      imageUrl: `/uploads/${product.image}`,
       category: categoryValue
     });
     onClose();
@@ -141,7 +141,7 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 max-h-[70vh] overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar">
           <div>
             <img
-              src={window.location.hostname === 'kamalaassab.github.io' ? `/${(product as any).image || (product as any).imageUrl}` : `/uploads/${(product as any).image || (product as any).imageUrl}`}
+              src={`/uploads/${(product as any).image || (product as any).imageUrl}`}
               alt={product.name}
               className="w-full h-auto object-cover"
             />

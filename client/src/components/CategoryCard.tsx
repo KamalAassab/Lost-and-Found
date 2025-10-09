@@ -13,7 +13,7 @@ export default function CategoryCard({ title, description, imageUrl, slug }: Cat
   return (
     <div className="relative group overflow-hidden h-[300px] md:h-[350px] rounded-xl shadow-md transition-transform duration-300 hover:scale-105 hover:shadow-xl cursor-pointer">
       <img
-        src={window.location.hostname === 'kamalaassab.github.io' ? imageUrl : imageUrl}
+        src={imageUrl}
         alt={`${title} collection`}
         className="w-full h-full object-cover object-center transition-all duration-500 group-hover:scale-110"
       />

@@ -437,7 +437,7 @@ export default function AccountDashboard() {
                               {order.items.map((item) => (
                                 <div key={item.id} className="flex items-center gap-3 border rounded-lg p-3 bg-white shadow-sm hover:shadow transition w-full">
                                   {item.product?.image ? (
-                                    <img src={window.location.hostname === 'kamalaassab.github.io' ? `/${item.product.image}` : `/uploads/${item.product.image}`} alt={item.product.name} className="w-16 h-16 object-cover rounded-lg border" />
+                                    <img src={`/uploads/${item.product.image}`} alt={item.product.name} className="w-16 h-16 object-cover rounded-lg border" />
                                   ) : (
                                     <div className="w-16 h-16 flex items-center justify-center bg-gray-200 rounded-lg border">
                                       <ImageIcon className="h-7 w-7 text-gray-400" />
@@ -482,7 +482,7 @@ export default function AccountDashboard() {
                       <div key={item.id} className="border rounded-xl p-4 flex flex-col items-center bg-neutral-50 shadow-sm hover:shadow transition relative">
                         {item.product?.image ? (
                           <img
-                            src={window.location.hostname === 'kamalaassab.github.io' ? `/${item.product.image}` : `/uploads/${item.product.image}`}
+                            src={`/uploads/${item.product.image}`}
                             alt={item.product.name || "Produit"}
                             className="w-24 h-24 object-cover rounded-lg mb-2 border"
                           />

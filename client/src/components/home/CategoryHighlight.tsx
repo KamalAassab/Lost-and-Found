@@ -2,19 +2,16 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import CategoryCard from "@/components/CategoryCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { staticCategories } from "@/data/staticData";
 
 export default function CategoryHighlight() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['/api/categories'],
-    enabled: window.location.hostname !== 'kamalaassab.github.io', // Disable for static deployment
+    enabled: true,
   });
 
-  // Use static data for GitHub Pages deployment
-  const isStaticDeployment = window.location.hostname === 'kamalaassab.github.io';
-  const categories = isStaticDeployment ? staticCategories : (Array.isArray(data) ? data : []);
+  const categories = Array.isArray(data) ? data : [];
 
-  if (!isStaticDeployment && isLoading) {
+  if (isLoading) {
     return (
       <section className="py-12 px-4 bg-white">
         <div className="container mx-auto">
@@ -33,7 +30,7 @@ export default function CategoryHighlight() {
     );
   }
 
-  if (!isStaticDeployment && error) {
+  if (error) {
     // Display default cards if there's an error fetching categories
     return (
       <section className="py-12 px-4 bg-white">
@@ -48,13 +45,13 @@ export default function CategoryHighlight() {
             <CategoryCard
               title="Hoodies"
               description="À partir de 199 MAD"
-              imageUrl={window.location.hostname === 'kamalaassab.github.io' ? '/hoodie.jpg' : '/hoodie.jpg'}
+              imageUrl="/hoodie.jpg"
               slug="hoodies"
             />
             <CategoryCard
               title="T-Shirts"
               description="À partir de 120 MAD"
-              imageUrl={window.location.hostname === 'kamalaassab.github.io' ? '/tshirt.jpg' : '/tshirt.jpg'}
+              imageUrl="/tshirt.jpg"
               slug="tshirts"
             />
           </div>
@@ -80,7 +77,7 @@ export default function CategoryHighlight() {
                 key={category.slug}
                 title={category.name}
                 description={category.description}
-                imageUrl={category.backgroundImageUrl || (window.location.hostname === 'kamalaassab.github.io' ? '/placeholder-category.jpg' : '/placeholder-category.jpg')}
+                imageUrl={category.backgroundImageUrl || '/placeholder-category.jpg'}
                 slug={category.slug}
               />
             );

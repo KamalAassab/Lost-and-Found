@@ -60,12 +60,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
 
     // Skip auth check for static deployment
-    if (window.location.hostname === 'kamalaassab.github.io') {
-      setIsLoading(false);
-      setUser(null);
-    } else {
-      checkAuth();
-    }
+    checkAuth();
   }, []);
 
   const login = async (username: string, password: string): Promise<boolean> => {

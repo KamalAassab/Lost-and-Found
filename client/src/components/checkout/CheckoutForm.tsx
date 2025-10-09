@@ -341,10 +341,10 @@ export default function CheckoutForm() {
                                 className="pr-12"
                               />
                               {cardType === "visa" && (
-                                <img src={window.location.hostname === 'kamalaassab.github.io' ? '/visa.svg' : '/visa.svg'} alt="Visa" className="absolute right-3 top-1/2 -translate-y-1/2 h-6" />
+                                <img src="/visa.svg" alt="Visa" className="absolute right-3 top-1/2 -translate-y-1/2 h-6" />
                               )}
                               {cardType === "mastercard" && (
-                                <img src={window.location.hostname === 'kamalaassab.github.io' ? '/mastercard.svg' : '/mastercard.svg'} alt="Mastercard" className="absolute right-3 top-1/2 -translate-y-1/2 h-6" />
+                                <img src="/mastercard.svg" alt="Mastercard" className="absolute right-3 top-1/2 -translate-y-1/2 h-6" />
                               )}
                             </div>
                           </FormControl>

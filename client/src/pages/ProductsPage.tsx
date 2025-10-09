@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Search } from "lucide-react";
 import debounce from "lodash/debounce";
-import { staticProducts } from "@/data/staticData";
 
 type SortOption = "price_asc" | "price_desc" | "name_asc" | "name_desc";
 
@@ -59,12 +58,10 @@ export default function ProductsPage() {
   // Fetch all products
   const { data: products, isLoading, error } = useQuery({
     queryKey: ['/api/products'],
-    enabled: window.location.hostname !== 'kamalaassab.github.io', // Disable for static deployment
+    enabled: true,
   });
 
-  // Use static data for GitHub Pages deployment
-  const isStaticDeployment = window.location.hostname === 'kamalaassab.github.io';
-  const displayProducts = isStaticDeployment ? staticProducts : products;
+  const displayProducts = products;
 
   const handleFilterChange = (value: string) => {
     setFilter(value);

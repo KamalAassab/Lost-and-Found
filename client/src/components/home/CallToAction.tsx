@@ -5,7 +5,7 @@ export default function CallToAction() {
     <section className="py-10 md:py-10 relative">
       <div className="absolute inset-0 z-0">
         <img
-          src={window.location.hostname === 'kamalaassab.github.io' ? '/bottom-banner.jpg' : '/bottom-banner.jpg'}
+          src="/bottom-banner.jpg"
           alt="Urban street fashion"
           className="w-full h-full object-cover"
         />

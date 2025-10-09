@@ -5,7 +5,6 @@ import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { staticProducts } from "@/data/staticData";
 
 export default function FeaturedProducts() {
   const [activeTab, setActiveTab] = useState<"all" | "hoodies" | "tshirts">("all");
@@ -15,12 +14,10 @@ export default function FeaturedProducts() {
 
   const { data: products, isLoading, error } = useQuery({
     queryKey: ['/api/products', { featured: true }],
-    enabled: window.location.hostname !== 'kamalaassab.github.io', // Disable for static deployment
+    enabled: true,
   });
 
-  // Use static data for GitHub Pages deployment
-  const isStaticDeployment = window.location.hostname === 'kamalaassab.github.io';
-  const displayProducts = isStaticDeployment ? staticProducts.filter(p => p.featured) : products;
+  const displayProducts = products;
 
   const filteredProducts = Array.isArray(displayProducts)
     ? activeTab === "all"
@@ -124,7 +121,7 @@ export default function FeaturedProducts() {
               <ChevronRight className="h-5 w-5" />
             </button>
           )}
-        {!isStaticDeployment && isLoading ? (
+        {isLoading ? (
             <div ref={scrollRef} className="flex overflow-x-auto gap-4 md:gap-6 xl:gap-8 pb-4 scroll-smooth">
               {[...Array(5)].map((_, index) => (
                 <div key={index} className="flex-none w-[170px] md:w-[180px] xl:w-[200px] bg-white rounded-xl overflow-hidden shadow">
@@ -136,7 +133,7 @@ export default function FeaturedProducts() {
               </div>
             ))}
           </div>
-        ) : !isStaticDeployment && error ? (
+        ) : error ? (
           <div className="text-center py-8">
             <p className="text-red-500">Erreur lors du chargement des produits. Veuillez réessayer.</p>
           </div>

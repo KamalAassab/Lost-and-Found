@@ -106,7 +106,7 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
         <div className={`relative overflow-hidden bg-neutral-100 flex items-center justify-center ${imageHeight}`}>
           <Link href={`/product/${product.slug}`} className="block w-full h-full">
             <img
-              src={window.location.hostname === 'kamalaassab.github.io' ? `/${product.image}` : `/uploads/${product.image}`}
+              src={`/uploads/${product.image}`}
               alt={product.name}
               className={`w-full h-full object-contain transition-transform duration-300 group-hover:scale-110 ${compact ? '' : ''}`}
               style={compact ? { maxHeight: 150 } : {}}

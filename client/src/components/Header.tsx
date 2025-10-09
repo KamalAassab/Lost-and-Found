@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import ProductCard from "@/components/ProductCard";
-import { staticProducts } from "@/data/staticData";
 
 interface HeaderProps {
   toggleCart: () => void;
@@ -28,12 +27,10 @@ export default function Header({ toggleCart }: HeaderProps) {
   // Fetch all products for search
   const { data: products = [] } = useQuery({
     queryKey: ["/api/products"],
-    enabled: window.location.hostname !== 'kamalaassab.github.io', // Disable for static deployment
+    enabled: true,
   });
 
-  // Use static data for GitHub Pages deployment
-  const isStaticDeployment = window.location.hostname === 'kamalaassab.github.io';
-  const displayProducts = isStaticDeployment ? staticProducts : products;
+  const displayProducts = products;
 
   // Filter products by search query
   const searchResults = searchQuery.trim()
@@ -190,7 +187,7 @@ export default function Header({ toggleCart }: HeaderProps) {
                     className="block px-4 py-3 hover:bg-neutral-100 border-b last:border-b-0 border-neutral-200 transition"
                   >
                     <div className="flex items-center gap-3">
-                      <img src={window.location.hostname === 'kamalaassab.github.io' ? `/${product.image}` : `/uploads/${product.image}`} alt={product.name} className="w-12 h-12 object-cover rounded" />
+                      <img src={`/uploads/${product.image}`} alt={product.name} className="w-12 h-12 object-cover rounded" />
                       <div>
                         <div className="font-semibold">{product.name}</div>
                         <div className="text-xs text-neutral-500 line-clamp-1">{product.description}</div>

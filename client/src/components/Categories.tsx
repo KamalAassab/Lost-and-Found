@@ -5,12 +5,12 @@ const Categories: React.FC = () => {
     {
       name: 'Hoodies',
       description: 'Stay cozy and stylish with our premium hoodies. Perfect for casual outings and chilly days.',
-      image: window.location.hostname === 'kamalaassab.github.io' ? '/hoodie.jpg' : '/hoodie.jpg'
+      image: '/hoodie.jpg'
     },
     {
       name: 'T-shirts',
       description: 'Our comfortable and trendy t-shirts are a must-have for your everyday wardrobe.',
-      image: window.location.hostname === 'kamalaassab.github.io' ? '/tshirt.jpg' : '/tshirt.jpg'
+      image: '/tshirt.jpg'
     }
   ];
 

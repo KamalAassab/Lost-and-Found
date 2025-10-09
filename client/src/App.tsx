@@ -31,10 +31,8 @@ import PrivacyPage from "@/pages/PrivacyPage";
 import AdminUsersPage from "@/pages/admin/AdminUsersPage";
 
 function AppRouter() {
-  const base = window.location.hostname === 'kamalaassab.github.io' ? '/Lost-and-Found' : '';
-  
   return (
-    <Router base={base}>
+    <Router>
       <Switch>
         {/* Customer facing routes */}
         <Route path="/" component={HomePage} />
