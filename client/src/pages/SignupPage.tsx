@@ -95,7 +95,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col justify-center items-center px-4" style={{ backgroundImage: 'url(/bigbanner.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+    <div className="relative min-h-screen flex flex-col justify-center items-center px-4" style={{ backgroundImage: `url(${window.location.hostname === 'kamalaassab.github.io' ? '/bigbanner.png' : '/bigbanner.png'})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
       <div className="relative w-full max-w-xs z-10">
         <div className="relative bg-white/90 rounded-2xl shadow-xl px-3 py-3 md:px-4 md:py-4">
           <Link href="/" className="absolute left-4 top-4">

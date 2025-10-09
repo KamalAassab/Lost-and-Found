@@ -11,7 +11,7 @@ export default function HeroSection({ onBuyNowClick }: HeroSectionProps) {
     <section className="relative h-[60vh] md:h-[65vh] bg-primary overflow-hidden">
       <div className="absolute inset-0 z-0">
         <img
-          src="/banner.jpg"
+          src={window.location.hostname === 'kamalaassab.github.io' ? '/banner.jpg' : '/banner.jpg'}
           alt=""
           className="w-full h-full object-cover opacity-60"
         />

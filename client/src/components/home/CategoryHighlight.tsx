@@ -48,13 +48,13 @@ export default function CategoryHighlight() {
             <CategoryCard
               title="Hoodies"
               description="À partir de 199 MAD"
-              imageUrl="/hoodie.jpg"
+              imageUrl={window.location.hostname === 'kamalaassab.github.io' ? '/hoodie.jpg' : '/hoodie.jpg'}
               slug="hoodies"
             />
             <CategoryCard
               title="T-Shirts"
               description="À partir de 120 MAD"
-              imageUrl="/tshirt.jpg"
+              imageUrl={window.location.hostname === 'kamalaassab.github.io' ? '/tshirt.jpg' : '/tshirt.jpg'}
               slug="tshirts"
             />
           </div>
@@ -80,7 +80,7 @@ export default function CategoryHighlight() {
                 key={category.slug}
                 title={category.name}
                 description={category.description}
-                imageUrl={category.backgroundImageUrl || '/placeholder-category.jpg'}
+                imageUrl={category.backgroundImageUrl || (window.location.hostname === 'kamalaassab.github.io' ? '/placeholder-category.jpg' : '/placeholder-category.jpg')}
                 slug={category.slug}
               />
             );
