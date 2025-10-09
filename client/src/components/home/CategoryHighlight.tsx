@@ -74,9 +74,6 @@ export default function CategoryHighlight() {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {categories.map((category: any) => {
-            // Adjust slug for navigation if it's 't-shirts'
-            const adjustedSlug = category.slug === 't-shirts' ? 'tshirts' : category.slug;
-
             console.log('Category object:', category);
             return (
               <CategoryCard
@@ -84,7 +81,7 @@ export default function CategoryHighlight() {
                 title={category.name}
                 description={category.description}
                 imageUrl={category.backgroundImageUrl || '/placeholder-category.jpg'}
-                slug={adjustedSlug} // Use the adjusted slug for navigation
+                slug={category.slug}
               />
             );
           })}
