@@ -99,7 +99,7 @@ export default function ProductDetailPage() {
       size: selectedSize,
       price: Number(product.price),
       name: product.name,
-      imageUrl: window.location.hostname === 'kamalaassab.github.io' ? `/${product.image}` : `/uploads/${product.image}`,
+      imageUrl: window.location.hostname === 'kamalaassab.github.io' ? `./${product.image}` : `/uploads/${product.image}`,
       category: categoryValue
     });
   };
@@ -236,7 +236,7 @@ export default function ProductDetailPage() {
               </div>
             )}
             <img
-              src={window.location.hostname === 'kamalaassab.github.io' ? `/${product.image}` : `/uploads/${product.image}`}
+              src={window.location.hostname === 'kamalaassab.github.io' ? `./${product.image}` : `/uploads/${product.image}`}
               alt={product.name}
               className="w-full h-auto object-cover"
             />
