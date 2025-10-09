@@ -4,6 +4,7 @@ import HeroSection from "@/components/home/HeroSection";
 import CategoryHighlight from "@/components/home/CategoryHighlight";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
 import CallToAction from "@/components/home/CallToAction";
+import DebugStaticData from "@/debug-static-data";
 
 export default function HomePage() {
   // Set page title
@@ -19,6 +20,7 @@ export default function HomePage() {
   
   return (
     <MainLayout>
+      <DebugStaticData />
       <HeroSection onBuyNowClick={scrollToFeaturedProducts} />
       <CategoryHighlight />
       <div ref={featuredProductsRef}>
