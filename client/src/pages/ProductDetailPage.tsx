@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/context/AuthContext";
 import { AuthPopup } from "@/components/auth/AuthPopup";
+import { staticProducts } from "@/data/staticData";
 
 // Define product interface for stronger typing
 interface Product {
@@ -41,17 +42,30 @@ export default function ProductDetailPage() {
   const { user } = useAuth();
   const [showAuthPopup, setShowAuthPopup] = useState(false);
 
+  // Check if this is static deployment
+  const isStaticDeployment = window.location.hostname === 'kamalaassab.github.io';
+
   // Fetch product details
-  const { data: product, isLoading: isLoadingProduct } = useQuery<Product>({
+  const { data: apiProduct, isLoading: isLoadingProduct } = useQuery<Product>({
     queryKey: [`/api/products/${slug}`],
-    enabled: !!slug,
+    enabled: !!slug && !isStaticDeployment,
   });
 
+  // Get product from static data or API
+  const product = isStaticDeployment 
+    ? staticProducts.find(p => p.slug === slug)
+    : apiProduct;
+
   // Fetch related products
-  const { data: relatedProducts = [], isLoading: isLoadingRelated } = useQuery<Product[]>({
+  const { data: apiRelatedProducts = [], isLoading: isLoadingRelated } = useQuery<Product[]>({
     queryKey: ['/api/products', { category: product?.category }],
-    enabled: !!product?.category,
+    enabled: !!product?.category && !isStaticDeployment,
   });
+
+  // Get related products from static data or API
+  const relatedProducts = isStaticDeployment
+    ? staticProducts.filter(p => p.category === product?.category && p.id !== product?.id).slice(0, 4)
+    : apiRelatedProducts;
 
   // Set page title
   React.useEffect(() => {
@@ -85,7 +99,7 @@ export default function ProductDetailPage() {
       size: selectedSize,
       price: Number(product.price),
       name: product.name,
-      imageUrl: `/uploads/${product.image}`,
+      imageUrl: window.location.hostname === 'kamalaassab.github.io' ? `/${product.image}` : `/uploads/${product.image}`,
       category: categoryValue
     });
   };
@@ -126,7 +140,7 @@ export default function ProductDetailPage() {
     }
   };
 
-  if (isLoadingProduct) {
+  if (!isStaticDeployment && isLoadingProduct) {
     return (
       <MainLayout>
         <div className="container mx-auto py-12">

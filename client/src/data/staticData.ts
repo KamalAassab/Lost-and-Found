@@ -32,7 +32,7 @@ export const staticProducts = [
     categoryId: 1,
     inStock: true,
     sizes: ["M", "L", "XL", "XXL"],
-    featured: false,
+    featured: true,
     createdAt: "2025-05-09T01:37:53.000Z"
   },
   {
@@ -47,7 +47,7 @@ export const staticProducts = [
     categoryId: 1,
     inStock: true,
     sizes: ["S", "M", "L", "XL", "XXL"],
-    featured: false,
+    featured: true,
     createdAt: "2025-05-09T01:52:47.000Z"
   },
   {
@@ -62,7 +62,7 @@ export const staticProducts = [
     categoryId: 1,
     inStock: true,
     sizes: ["M", "XL", "L"],
-    featured: false,
+    featured: true,
     createdAt: "2025-05-09T02:27:14.000Z"
   },
   {
@@ -77,7 +77,7 @@ export const staticProducts = [
     categoryId: 1,
     inStock: true,
     sizes: ["M", "S", "L", "XL", "XXL"],
-    featured: false,
+    featured: true,
     createdAt: "2025-05-09T02:27:49.000Z"
   },
   {
@@ -92,7 +92,7 @@ export const staticProducts = [
     categoryId: 1,
     inStock: true,
     sizes: ["M", "L", "XL", "XXL"],
-    featured: false,
+    featured: true,
     createdAt: "2025-05-09T02:28:23.000Z"
   },
   
@@ -109,7 +109,7 @@ export const staticProducts = [
     categoryId: 2,
     inStock: true,
     sizes: ["M", "L", "XL", "XXL", "S", "XS"],
-    featured: false,
+    featured: true,
     createdAt: "2025-05-09T02:32:09.000Z"
   },
   {
@@ -124,7 +124,7 @@ export const staticProducts = [
     categoryId: 2,
     inStock: true,
     sizes: ["S", "M", "L", "XL", "XXL", "XS"],
-    featured: false,
+    featured: true,
     createdAt: "2025-05-09T03:14:12.000Z"
   },
   {
@@ -139,7 +139,7 @@ export const staticProducts = [
     categoryId: 2,
     inStock: true,
     sizes: ["S", "M", "L", "XL", "XXL"],
-    featured: false,
+    featured: true,
     createdAt: "2025-05-09T03:14:44.000Z"
   },
   {
@@ -154,7 +154,7 @@ export const staticProducts = [
     categoryId: 2,
     inStock: true,
     sizes: ["S", "M", "L", "XL", "XXL"],
-    featured: false,
+    featured: true,
     createdAt: "2025-05-09T03:15:28.000Z"
   },
   {
@@ -169,7 +169,7 @@ export const staticProducts = [
     categoryId: 2,
     inStock: true,
     sizes: ["S", "M", "L", "XL", "XXL", "XS"],
-    featured: false,
+    featured: true,
     createdAt: "2025-05-14T01:23:04.000Z"
   }
 ];
