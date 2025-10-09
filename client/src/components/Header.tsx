@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import ProductCard from "@/components/ProductCard";
+import { staticProducts } from "@/data/staticData";
 
 interface HeaderProps {
   toggleCart: () => void;
@@ -30,9 +31,13 @@ export default function Header({ toggleCart }: HeaderProps) {
     enabled: window.location.hostname !== 'kamalaassab.github.io', // Disable for static deployment
   });
 
+  // Use static data for GitHub Pages deployment
+  const isStaticDeployment = window.location.hostname === 'kamalaassab.github.io';
+  const displayProducts = isStaticDeployment ? staticProducts : products;
+
   // Filter products by search query
   const searchResults = searchQuery.trim()
-    ? products.filter((product: any) =>
+    ? displayProducts.filter((product: any) =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.description.toLowerCase().includes(searchQuery.toLowerCase())
       )

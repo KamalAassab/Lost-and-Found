@@ -2,6 +2,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import CategoryCard from "@/components/CategoryCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { staticCategories } from "@/data/staticData";
 
 export default function CategoryHighlight() {
   const { data, isLoading, error } = useQuery({
@@ -9,7 +10,9 @@ export default function CategoryHighlight() {
     enabled: window.location.hostname !== 'kamalaassab.github.io', // Disable for static deployment
   });
 
-  const categories = Array.isArray(data) ? data : [];
+  // Use static data for GitHub Pages deployment
+  const isStaticDeployment = window.location.hostname === 'kamalaassab.github.io';
+  const categories = isStaticDeployment ? staticCategories : (Array.isArray(data) ? data : []);
 
   if (isLoading) {
     return (

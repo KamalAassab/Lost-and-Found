@@ -5,6 +5,7 @@ import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { staticProducts } from "@/data/staticData";
 
 export default function FeaturedProducts() {
   const [activeTab, setActiveTab] = useState<"all" | "hoodies" | "tshirts">("all");
@@ -17,10 +18,14 @@ export default function FeaturedProducts() {
     enabled: window.location.hostname !== 'kamalaassab.github.io', // Disable for static deployment
   });
 
-  const filteredProducts = Array.isArray(products)
+  // Use static data for GitHub Pages deployment
+  const isStaticDeployment = window.location.hostname === 'kamalaassab.github.io';
+  const displayProducts = isStaticDeployment ? staticProducts.filter(p => p.featured) : products;
+
+  const filteredProducts = Array.isArray(displayProducts)
     ? activeTab === "all"
-      ? products
-      : products.filter((product: any) => {
+      ? displayProducts
+      : displayProducts.filter((product: any) => {
           const productCategory = product.category?.toLowerCase();
           return productCategory === activeTab;
         })
