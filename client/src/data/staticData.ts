@@ -11,7 +11,7 @@ export const staticCategories = [
   {
     id: 2,
     name: "T-Shirts",
-    slug: "t-shirts", 
+    slug: "tshirts", 
     description: "Exprimez votre style avec nos t-shirts uniques, fabriqués à partir de matériaux doux et résistants. Idéals pour un usage quotidien, nos t-shirts streetwear apportent une touche moderne et décontractée à votre garde-robe.",
     backgroundImageUrl: "/1749917409154-662401747.jpg",
     createdAt: "2025-05-09T01:36:46.000Z"
