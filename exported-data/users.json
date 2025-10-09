@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "username": "admin",
+    "email": "admin@streetstylecentral.com",
+    "phone": null,
+    "address": null,
+    "fullname": "Admin",
+    "city": null
+  },
+  {
+    "id": 2,
+    "username": "its.urky",
+    "email": "kamalaassab2002@gmail.com",
+    "phone": "0642057869",
+    "address": "Avennue Chenguit, Smaala",
+    "fullname": "Aassab Kamal",
+    "city": "Settat"
+  },
+  {
+    "id": 3,
+    "username": "achraf0000",
+    "email": "client123@gmail.com",
+    "phone": "0612345678",
+    "address": "Maarif, Casablanca,  34098",
+    "fullname": "Achraf Guennouni",
+    "city": "Casablanca"
+  }
+]

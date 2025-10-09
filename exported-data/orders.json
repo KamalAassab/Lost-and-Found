@@ -1,0 +1,72 @@
+[
+  {
+    "id": 6,
+    "status": "shipped",
+    "customerName": "Amiiine Tanjawi",
+    "customerEmail": "kamalaassab2002@gmail.com",
+    "customerPhone": "+212642057869",
+    "shippingAddress": "N 14. DERB AKKA. JNAN SLIMAN",
+    "city": "TAROUDANT",
+    "postalCode": "83000",
+    "paymentMethod": "credit_card",
+    "total": "1245.00",
+    "free_shipping": true,
+    "createdAt": "2025-05-09T05:21:56.000Z"
+  },
+  {
+    "id": 7,
+    "status": "cancelled",
+    "customerName": "Achraf Guennouni",
+    "customerEmail": "0e3f4a4dda77@drmail.in",
+    "customerPhone": "+33323904537",
+    "shippingAddress": "95 Route De Beaune",
+    "city": "Beaune",
+    "postalCode": "21200",
+    "paymentMethod": "credit_card",
+    "total": "1490.00",
+    "free_shipping": true,
+    "createdAt": "2025-05-09T05:24:25.000Z"
+  },
+  {
+    "id": 8,
+    "status": "pending",
+    "customerName": "AASSAB Kamal",
+    "customerEmail": "kamalaassab2002@gmail.com",
+    "customerPhone": "0642057869",
+    "shippingAddress": "AVENNUE CHENGUIT",
+    "city": "SETTAT",
+    "postalCode": "260000",
+    "paymentMethod": "cash_on_delivery",
+    "total": "299.00",
+    "free_shipping": false,
+    "createdAt": "2025-05-13T18:42:29.000Z"
+  },
+  {
+    "id": 26,
+    "status": "processing",
+    "customerName": "Kamal AASSAB",
+    "customerEmail": "kamalrajawi38@gmail.com",
+    "customerPhone": "+212642057869",
+    "shippingAddress": "Avenue Chenguit, Settat, Morocco",
+    "city": "Settat",
+    "postalCode": "26000",
+    "paymentMethod": "cash_on_delivery",
+    "total": "498.00",
+    "free_shipping": false,
+    "createdAt": "2025-06-06T01:28:29.000Z"
+  },
+  {
+    "id": 27,
+    "status": "pending",
+    "customerName": "Achraf Guennouni",
+    "customerEmail": "kamalrajawi38@gmail.com",
+    "customerPhone": "0612345678",
+    "shippingAddress": "Maarif, Casablanca,  34098",
+    "city": "Casablanca",
+    "postalCode": "34098",
+    "paymentMethod": "cash_on_delivery",
+    "total": "398.00",
+    "free_shipping": false,
+    "createdAt": "2025-06-14T17:18:16.000Z"
+  }
+]
