@@ -1,4 +1,4 @@
-// Real data exported from MySQL database - Updated for GitHub Pages
+// Real data exported from MySQL database - Updated for GitHub Pages - LATEST VERSION
 export const staticCategories = [
   {
     "id": 1,
