@@ -1,19 +1,19 @@
-// Real data exported from MySQL database
+// Real data exported from MySQL database - Updated for GitHub Pages
 export const staticCategories = [
   {
     "id": 1,
     "name": "Hoodies",
     "slug": "hoodies",
-    "description": "Découvrez notre collection de hoodies alliant confort, style et qualité supérieure. Parfaits pour un look streetwear tendance ou pour rester au chaud lors des journées fraîches, nos hoodies sont conçus pour s’adapter à toutes vos envies.",
-    "backgroundImageUrl": "/uploads/1749917402351-440393788.jpg",
+    "description": "Découvrez notre collection de hoodies alliant confort, style et qualité supérieure. Parfaits pour un look streetwear tendance ou pour rester au chaud lors des journées fraîches, nos hoodies sont conçus pour s'adapter à toutes vos envies.",
+    "backgroundImageUrl": "1749917402351-440393788.jpg", // Fixed: removed /uploads/ prefix
     "createdAt": "2025-05-09T01:34:55.000Z"
   },
   {
     "id": 2,
     "name": "T-Shirts",
-    "slug": "t-shirts",
+    "slug": "tshirts",
     "description": "Exprimez votre style avec nos t-shirts uniques, fabriqués à partir de matériaux doux et résistants. Idéals pour un usage quotidien, nos t-shirts streetwear apportent une touche moderne et décontractée à votre garde-robe.",
-    "backgroundImageUrl": "/uploads/1749917409154-662401747.jpg",
+    "backgroundImageUrl": "1749917409154-662401747.jpg", // Fixed: removed /uploads/ prefix
     "createdAt": "2025-05-09T01:36:46.000Z"
   }
 ];
@@ -25,13 +25,13 @@ export const staticProducts = [
     "slug": "eerie-soldier-hoodie",
     "description": "This hoodie features a striking design with a monochromatic, vintage-style soldier graphic on the front. The bold text \"LAST\" adds an edgy and mysterious touch, making it perfect for those who appreciate dark, alternative fashion. The cropped style and hood provide both comfort and a modern aesthetic.",
     "image": "1746751073582-685583771.jpg",
-    "price": 249,
-    "oldPrice": 349,
+    "price": 24900,
+    "oldPrice": 34900,
     "category": "hoodies",
     "categoryId": 1,
     "inStock": true,
-    "sizes": "\"[\\\"M\\\",\\\"L\\\",\\\"XL\\\",\\\"XXL\\\"]\"",
-    "featured": false,
+    "sizes": ["M", "L", "XL", "XXL"],
+    "featured": true,
     "createdAt": "2025-05-09T01:37:53.000Z"
   },
   {
@@ -40,13 +40,13 @@ export const staticProducts = [
     "slug": "no-longer-missing-hoodie",
     "description": "This black hoodie stands out with its hauntingly artistic design, featuring a blurred, ghost-like face graphic paired with the phrase \"NO LONGER MISSING.\" The eerie imagery and stark contrast create a powerful statement piece that appeals to fans of gothic and surreal fashion.",
     "image": "1746751967795-535169883.jpg",
-    "price": 249,
-    "oldPrice": 349,
+    "price": 24900,
+    "oldPrice": 34900,
     "category": "hoodies",
     "categoryId": 1,
     "inStock": true,
-    "sizes": "\"[\\\"S\\\",\\\"M\\\",\\\"L\\\",\\\"XL\\\",\\\"XXL\\\"]\"",
-    "featured": false,
+    "sizes": ["S", "M", "L", "XL", "XXL"],
+    "featured": true,
     "createdAt": "2025-05-09T01:52:47.000Z"
   },
   {
@@ -55,13 +55,13 @@ export const staticProducts = [
     "slug": "mudhoney-inspired-hoodie",
     "description": "Inspired by the iconic band Mudhoney, this hoodie showcases a minimalist yet impactful design with the band's name in bold lettering and silhouettes of two figures. The black background with white graphics gives it a gritty, punk-rock vibe, making it ideal for music enthusiasts and fashion-forward individuals.",
     "image": "1746754034384-164380864.jpg",
-    "price": 249,
-    "oldPrice": 349,
+    "price": 24900,
+    "oldPrice": 34900,
     "category": "hoodies",
     "categoryId": 1,
     "inStock": true,
-    "sizes": "\"[\\\"M\\\",\\\"XL\\\",\\\"L\\\"]\"",
-    "featured": false,
+    "sizes": ["M", "XL", "L"],
+    "featured": true,
     "createdAt": "2025-05-09T02:27:14.000Z"
   },
   {
@@ -70,13 +70,13 @@ export const staticProducts = [
     "slug": "spiritual-chaos-hoodie",
     "description": "This hoodie combines a dramatic portrait with bold Chinese characters translating to \"spiritual chaos.\" The monochromatic color scheme and intense facial expression evoke a sense of mystery and introspection, appealing to those who enjoy culturally rich and thought-provoking apparel.",
     "image": "1746754069633-51828227.jpg",
-    "price": 249,
-    "oldPrice": 349,
+    "price": 24900,
+    "oldPrice": 34900,
     "category": "hoodies",
     "categoryId": 1,
     "inStock": true,
-    "sizes": "\"[\\\"M\\\",\\\"S\\\",\\\"L\\\",\\\"XL\\\",\\\"XXL\\\"]\"",
-    "featured": false,
+    "sizes": ["M", "S", "L", "XL", "XXL"],
+    "featured": true,
     "createdAt": "2025-05-09T02:27:49.000Z"
   },
   {
@@ -85,13 +85,13 @@ export const staticProducts = [
     "slug": "skull-warrior-hoodie",
     "description": "Featuring a stylized skull graphic with intricate details, this hoodie exudes a rebellious and edgy vibe. The crossbones and skeletal design elements make it a standout piece for fans of gothic or punk-inspired fashion. The black base and white graphic create a high-contrast look that is both bold and visually striking.",
     "image": "1746754103981-568640794.jpg",
-    "price": 249,
-    "oldPrice": 349,
+    "price": 24900,
+    "oldPrice": 34900,
     "category": "hoodies",
     "categoryId": 1,
     "inStock": true,
-    "sizes": "\"[\\\"M\\\",\\\"L\\\",\\\"XL\\\",\\\"XXL\\\"]\"",
-    "featured": false,
+    "sizes": ["M", "L", "XL", "XXL"],
+    "featured": true,
     "createdAt": "2025-05-09T02:28:23.000Z"
   },
   {
@@ -100,13 +100,13 @@ export const staticProducts = [
     "slug": "t-shirt-description",
     "description": "This black t-shirt features a striking design with a monochromatic silhouette of a figure standing against a backdrop of text. The minimalist aesthetic and the interplay between the figure and the text create a modern, artistic look that appeals to those who appreciate unique and thought-provoking designs.",
     "image": "1746754329865-485870824.jpg",
-    "price": 149,
-    "oldPrice": 199,
+    "price": 14900,
+    "oldPrice": 19900,
     "category": "tshirts",
     "categoryId": 2,
     "inStock": true,
-    "sizes": "\"[\\\"M\\\",\\\"L\\\",\\\"XL\\\",\\\"XXL\\\",\\\"S\\\",\\\"XS\\\"]\"",
-    "featured": false,
+    "sizes": ["M", "L", "XL", "XXL", "S", "XS"],
+    "featured": true,
     "createdAt": "2025-05-09T02:32:09.000Z"
   },
   {
@@ -115,13 +115,13 @@ export const staticProducts = [
     "slug": "iraqi-pride-t-shirt",
     "description": "This bold black t-shirt showcases a powerful graphic of a person's face with Arabic text above it in red. The design is both culturally significant and visually impactful, making it an excellent choice for those who want to express their pride in Iraqi heritage or support cultural representation in fashion.",
     "image": "1746756852689-477330517.jpg",
-    "price": 149,
-    "oldPrice": 199,
+    "price": 14900,
+    "oldPrice": 19900,
     "category": "tshirts",
     "categoryId": 2,
     "inStock": true,
-    "sizes": "\"[\\\"S\\\",\\\"M\\\",\\\"L\\\",\\\"XL\\\",\\\"XXL\\\",\\\"XS\\\"]\"",
-    "featured": false,
+    "sizes": ["S", "M", "L", "XL", "XXL", "XS"],
+    "featured": true,
     "createdAt": "2025-05-09T03:14:12.000Z"
   },
   {
@@ -130,13 +130,13 @@ export const staticProducts = [
     "slug": "love-and-lies-t-shirt",
     "description": "This white t-shirt features a detailed illustration of a winged figure, possibly representing an angel or cherub, paired with the phrase \"Love and Lies.\" The contrast between the delicate artwork and the provocative text creates a compelling and edgy piece that resonates with fans of alternative and conceptual fashion.",
     "image": "1746756884904-500381346.jpg",
-    "price": 149,
-    "oldPrice": 199,
+    "price": 14900,
+    "oldPrice": 19900,
     "category": "tshirts",
     "categoryId": 2,
     "inStock": true,
-    "sizes": "\"[\\\"S\\\",\\\"M\\\",\\\"L\\\",\\\"XL\\\",\\\"XXL\\\"]\"",
-    "featured": false,
+    "sizes": ["S", "M", "L", "XL", "XXL"],
+    "featured": true,
     "createdAt": "2025-05-09T03:14:44.000Z"
   },
   {
@@ -145,13 +145,13 @@ export const staticProducts = [
     "slug": "starlit-face-t-shirt",
     "description": "This white t-shirt displays a striking portrait of a person with a bold red starburst graphic across their face. The combination of the clean background, the intense facial expression, and the vibrant red detail makes this shirt a statement piece that stands out for its boldness and artistic flair.",
     "image": "1746756928110-603665496.jpg",
-    "price": 149,
-    "oldPrice": 199,
+    "price": 14900,
+    "oldPrice": 19900,
     "category": "tshirts",
     "categoryId": 2,
     "inStock": true,
-    "sizes": "\"[\\\"S\\\",\\\"M\\\",\\\"L\\\",\\\"XL\\\",\\\"XXL\\\"]\"",
-    "featured": false,
+    "sizes": ["S", "M", "L", "XL", "XXL"],
+    "featured": true,
     "createdAt": "2025-05-09T03:15:28.000Z"
   },
   {
@@ -160,13 +160,13 @@ export const staticProducts = [
     "slug": "silhouette-and-script-t-shirt",
     "description": "This white t-shirt features a stark black silhouette of a person standing upright, accompanied by Arabic script above them. The minimalist design and the use of contrasting colors make it a versatile yet eye-catching piece that blends cultural elements with contemporary style.",
     "image": "1747182184330-832841823.jpg",
-    "price": 149,
-    "oldPrice": 199,
+    "price": 14900,
+    "oldPrice": 19900,
     "category": "tshirts",
     "categoryId": 2,
     "inStock": true,
-    "sizes": "\"[\\\"S\\\",\\\"M\\\",\\\"L\\\",\\\"XL\\\",\\\"XXL\\\",\\\"XS\\\"]\"",
-    "featured": false,
+    "sizes": ["S", "M", "L", "XL", "XXL", "XS"],
+    "featured": true,
     "createdAt": "2025-05-14T01:23:04.000Z"
   }
 ];
