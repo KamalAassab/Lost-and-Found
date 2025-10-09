@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const ShopLogo = ({ className }: { className?: string }) => {
-  const logoSrc = window.location.hostname === 'kamalaassab.github.io' ? './logo.png' : '/logo.png';
+  const logoSrc = window.location.hostname === 'kamalaassab.github.io' ? '/logo.png' : '/logo.png';
   
   return (
     <img
