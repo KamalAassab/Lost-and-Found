@@ -23,8 +23,7 @@ export function createSlug(text: string) {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)+/g, '')
-    .replace(/t-shirts?/g, 'tshirts'); // Convert t-shirts to tshirts
+    .replace(/(^-|-$)+/g, '');
 }
 
 export function applyHoodiePromotion(items: any[]) {
