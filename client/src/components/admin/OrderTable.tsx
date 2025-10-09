@@ -437,7 +437,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
                     {order?.items?.map((item: any) => (
                       <div key={`${item.productId}-${item.size}`} className="flex items-center gap-4">
                                 <img 
-                          src={item.product?.image ? `/uploads/${item.product.image}` : undefined}
+                          src={item.product?.image ? (window.location.hostname === 'kamalaassab.github.io' ? `/${item.product.image}` : `/uploads/${item.product.image}`) : undefined}
                           alt={item.product?.name}
                           className="w-16 h-16 object-cover rounded-md"
                                 />

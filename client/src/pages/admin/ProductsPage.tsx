@@ -210,7 +210,7 @@ export default function AdminProductsPage() {
                         <TableCell className="font-medium">{product.id}</TableCell>
                         <TableCell>
                           <img 
-                            src={`/uploads/${product.image}`} 
+                            src={window.location.hostname === 'kamalaassab.github.io' ? `/${product.image}` : `/uploads/${product.image}`} 
                             alt={product.name} 
                             className="w-12 h-12 object-cover rounded"
                           />
