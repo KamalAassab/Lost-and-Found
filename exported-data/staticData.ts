@@ -271,5 +271,19 @@ export const staticOrders = [
     "total": "398.00",
     "free_shipping": false,
     "createdAt": "2025-06-14T17:18:16.000Z"
+  },
+  {
+    "id": 28,
+    "status": "pending",
+    "customerName": "Achraf Guennouni",
+    "customerEmail": "client123@gmail.com",
+    "customerPhone": "0612345678",
+    "shippingAddress": "Maarif, Casablanca,  34098",
+    "city": "Casablanca",
+    "postalCode": "34098",
+    "paymentMethod": "cash_on_delivery",
+    "total": "647.00",
+    "free_shipping": true,
+    "createdAt": "2025-10-09T03:40:14.000Z"
   }
 ];
