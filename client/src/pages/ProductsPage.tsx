@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Search } from "lucide-react";
 import debounce from "lodash/debounce";
+import { staticProducts } from "@/data/staticData";
 
 type SortOption = "price_asc" | "price_desc" | "name_asc" | "name_desc";
 
@@ -58,7 +59,12 @@ export default function ProductsPage() {
   // Fetch all products
   const { data: products, isLoading, error } = useQuery({
     queryKey: ['/api/products'],
+    enabled: window.location.hostname !== 'kamalaassab.github.io', // Disable for static deployment
   });
+
+  // Use static data for GitHub Pages deployment
+  const isStaticDeployment = window.location.hostname === 'kamalaassab.github.io';
+  const displayProducts = isStaticDeployment ? staticProducts : products;
 
   const handleFilterChange = (value: string) => {
     setFilter(value);
@@ -72,12 +78,12 @@ export default function ProductsPage() {
 
   // Sort products
   const sortedProducts = React.useMemo(() => {
-    if (!products) return [];
+    if (!displayProducts) return [];
     
     // First filter products based on category
-    let filteredProducts = products;
+    let filteredProducts = displayProducts;
     if (filter !== "all") {
-      filteredProducts = products.filter((product: any) => {
+      filteredProducts = displayProducts.filter((product: any) => {
         const productCategory = product.category.toLowerCase();
         const filterCategory = filter.toLowerCase();
         // Handle both singular and plural forms
@@ -110,7 +116,7 @@ export default function ProductsPage() {
           return 0;
       }
     });
-  }, [products, sortBy, debouncedSearchTerm, filter]);
+  }, [displayProducts, sortBy, debouncedSearchTerm, filter]);
 
   return (
     <MainLayout>
@@ -173,7 +179,7 @@ export default function ProductsPage() {
           </div>
 
           {/* Products grid */}
-          {isLoading ? (
+          {!isStaticDeployment && isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-8">
               {[...Array(8)].map((_, index) => (
                 <div key={index} className="bg-transparent">
@@ -181,7 +187,7 @@ export default function ProductsPage() {
                 </div>
               ))}
             </div>
-          ) : error ? (
+          ) : !isStaticDeployment && error ? (
             <div className="text-center py-16 bg-white rounded-2xl shadow-md">
               <Search className="mx-auto h-12 w-12 text-gray-300 mb-4" />
               <h3 className="text-xl font-semibold mb-2">Aucun produit trouvé</h3>

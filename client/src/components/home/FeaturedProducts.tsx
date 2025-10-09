@@ -124,7 +124,7 @@ export default function FeaturedProducts() {
               <ChevronRight className="h-5 w-5" />
             </button>
           )}
-        {isLoading ? (
+        {!isStaticDeployment && isLoading ? (
             <div ref={scrollRef} className="flex overflow-x-auto gap-4 md:gap-6 xl:gap-8 pb-4 scroll-smooth">
               {[...Array(5)].map((_, index) => (
                 <div key={index} className="flex-none w-[170px] md:w-[180px] xl:w-[200px] bg-white rounded-xl overflow-hidden shadow">
@@ -136,7 +136,7 @@ export default function FeaturedProducts() {
               </div>
             ))}
           </div>
-        ) : error ? (
+        ) : !isStaticDeployment && error ? (
           <div className="text-center py-8">
             <p className="text-red-500">Erreur lors du chargement des produits. Veuillez réessayer.</p>
           </div>

@@ -14,7 +14,7 @@ export default function CategoryHighlight() {
   const isStaticDeployment = window.location.hostname === 'kamalaassab.github.io';
   const categories = isStaticDeployment ? staticCategories : (Array.isArray(data) ? data : []);
 
-  if (isLoading) {
+  if (!isStaticDeployment && isLoading) {
     return (
       <section className="py-12 px-4 bg-white">
         <div className="container mx-auto">
@@ -33,7 +33,7 @@ export default function CategoryHighlight() {
     );
   }
 
-  if (error) {
+  if (!isStaticDeployment && error) {
     // Display default cards if there's an error fetching categories
     return (
       <section className="py-12 px-4 bg-white">
