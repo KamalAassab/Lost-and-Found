@@ -1,7 +1,7 @@
-# StreetStyleCentral - Plateforme E-commerce de Mode Urbaine
+# LOST&FOUND - Plateforme E-commerce de Mode Urbaine
 
 ## Diapositive 1: Titre de la Présentation
-- **Titre du projet**: StreetStyleCentral - Plateforme E-commerce de Mode Urbaine
+- **Titre du projet**: LOST&FOUND - Plateforme E-commerce de Mode Urbaine
 - **Nom de l'étudiant**: [Votre Nom]
 - **Nom de l'encadrant**: [Nom de l'Encadrant]
 - **Université et département**: [Votre Université et Département]
@@ -43,7 +43,7 @@
 
 ## Diapositive 5: Présentation de l'Entreprise
 - **Présentation**:
-  - StreetStyleCentral - Marque de mode urbaine
+  - LOST&FOUND - Marque de mode urbaine
   - Focus sur les vêtements streetwear de qualité
   - Positionnement sur le marché de la mode urbaine
 
