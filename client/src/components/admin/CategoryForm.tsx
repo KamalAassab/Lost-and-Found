@@ -18,7 +18,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, Tag, Image, Save, X, Upload } from "lucide-react";
 
 // Form schema
 const categorySchema = z.object({
@@ -171,128 +172,200 @@ export default function CategoryForm({ category, onClose }: CategoryFormProps) {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nom de la catégorie</FormLabel>
-              <FormControl>
-                <Input placeholder="Hoodies" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="grid grid-cols-[1fr,auto] gap-2">
-          <FormField
-            control={form.control}
-            name="slug"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Slug</FormLabel>
-                <FormControl>
-                  <Input placeholder="hoodies" {...field} />
-                </FormControl>
-                <FormDescription>
-                  Identifiant unique pour l'URL de la catégorie. Doit être unique.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            className="mt-8"
-            onClick={generateSlug}
-            disabled={!watchedName || isGeneratingSlug}
-          >
-            Générer
-          </Button>
-        </div>
-        
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description (optionnelle)</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Description de la catégorie..."
-                  rows={3}
-                  {...field}
-                  value={field.value || ''}
+    <div className="w-full max-w-2xl mx-auto">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto">
+          {/* Basic Information Card */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="bg-black text-white px-4 py-3">
+              <CardTitle className="flex items-center space-x-2 text-sm font-medium">
+                <Tag className="h-4 w-4" />
+                <span>Informations de la catégorie</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 space-y-3">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Nom de la catégorie</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Hoodies" 
+                        className="h-9 text-sm border-gray-300 focus:border-red-500 focus:ring-red-500" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+            
+              <div className="grid grid-cols-[1fr,auto] gap-2">
+                <FormField
+                  control={form.control}
+                  name="slug"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">Slug</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="hoodies" 
+                          className="h-9 text-sm border-gray-300 focus:border-red-500 focus:ring-red-500" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription className="text-xs text-gray-500">
+                        Identifiant unique pour l'URL de la catégorie. Doit être unique.
+                      </FormDescription>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-6 h-9 px-3 text-xs border-gray-300 hover:border-red-500 hover:text-red-600"
+                  onClick={generateSlug}
+                  disabled={!watchedName || isGeneratingSlug}
+                >
+                  Générer
+                </Button>
+              </div>
+              
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Description (optionnelle)</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Description de la catégorie..."
+                        rows={3}
+                        className="text-sm border-gray-300 focus:border-red-500 focus:ring-red-500"
+                        {...field}
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+          </CardContent>
+        </Card>
         
-        {/* Background image upload */}
-        <div>
-          <FormLabel>Image de fond (optionnelle)</FormLabel>
-          <div className="flex items-center gap-4 mt-2">
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className="hidden"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {selectedFile ? "Changer l'image" : "Choisir une image"}
-            </Button>
-            {selectedFile && (
-              <span className="text-sm text-gray-600 truncate max-w-[180px]">{selectedFile.name}</span>
-            )}
-          </div>
-          {imagePreview && (
-            <div className="mt-2">
-              <img src={imagePreview} alt="Aperçu" className="h-32 rounded shadow" />
-            </div>
-          )}
-          {category?.backgroundImageUrl && !imagePreview && (
-            <div className="mt-2">
-              <img src={category.backgroundImageUrl} alt="Aperçu" className="h-32 rounded shadow" />
-            </div>
-          )}
-        </div>
-        
-        {/* Form actions */}
-        <div className="flex justify-end gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={categoryMutation.isPending}
-          >
-            Annuler
-          </Button>
-          <Button
-            type="submit"
-            disabled={categoryMutation.isPending}
-          >
-            {categoryMutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {category ? "Mise à jour..." : "Création..."}
-              </>
-            ) : (
-              category ? "Mettre à jour" : "Créer"
-            )}
-          </Button>
-        </div>
-      </form>
-    </Form>
+          {/* Image Upload Card */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="bg-black text-white px-4 py-3">
+              <CardTitle className="flex items-center space-x-2 text-sm font-medium">
+                <Image className="h-4 w-4" />
+                <span>Image de fond</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 space-y-3">
+              <div className="space-y-2">
+                <FormLabel className="text-sm font-medium text-gray-700">Télécharger une image</FormLabel>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="h-9 px-3 text-xs border-gray-300 hover:border-red-500 hover:text-red-600"
+                  >
+                    <Upload className="h-3 w-3 mr-1" />
+                    {selectedFile ? "Changer l'image" : "Choisir une image"}
+                  </Button>
+                  {selectedFile && (
+                    <span className="text-xs text-gray-600 truncate max-w-[180px]">{selectedFile.name}</span>
+                  )}
+                </div>
+                <FormDescription className="text-xs text-gray-500">
+                  Formats acceptés: JPG, PNG, GIF (max 5MB)
+                </FormDescription>
+                {imagePreview && (
+                  <div className="mt-3 flex items-start gap-3">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                    />
+                    <div className="flex-1">
+                      <p className="text-xs text-gray-600 mb-2">Aperçu de l'image</p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-7 px-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
+                        onClick={() => {
+                          setImagePreview(null);
+                          setSelectedFile(null);
+                        }}
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        Supprimer
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                {category?.backgroundImageUrl && !imagePreview && (
+                  <div className="mt-3">
+                    <p className="text-xs text-gray-600 mb-2">Image actuelle:</p>
+                    <img 
+                      src={category.backgroundImageUrl} 
+                      alt="Aperçu actuel" 
+                      className="w-20 h-20 object-cover rounded-lg border border-gray-200" 
+                    />
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Form Actions Card */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  disabled={categoryMutation.isPending}
+                  className="h-9 px-4 text-sm border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600 hover:bg-red-50"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={categoryMutation.isPending}
+                  className="h-9 px-4 text-sm bg-red-600 hover:bg-red-700 text-white border-0"
+                >
+                  {categoryMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {category ? "Mise à jour..." : "Création..."}
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      {category ? "Mettre à jour" : "Créer"}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </form>
+      </Form>
+    </div>
   );
 }

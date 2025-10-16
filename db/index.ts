@@ -22,8 +22,7 @@ async function getDb() {
 
   return drizzle(connection, { 
     schema, 
-    mode: 'default',
-    prepare: true
+    mode: 'default'
   });
 }
 

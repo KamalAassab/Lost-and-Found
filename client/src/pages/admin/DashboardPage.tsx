@@ -2,7 +2,30 @@ import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import AdminLayout from "@/layouts/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, ShoppingBag, CreditCard, TrendingUp, Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { 
+  Package, 
+  ShoppingBag, 
+  CreditCard, 
+  TrendingUp, 
+  Users, 
+  Eye,
+  ArrowUpRight,
+  ArrowDownRight,
+  Activity,
+  DollarSign,
+  Calendar,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  XCircle,
+  Truck,
+  Star,
+  BarChart3,
+  PieChart as PieChartIcon,
+  RefreshCw
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   BarChart, 
@@ -15,7 +38,11 @@ import {
   PieChart, 
   Pie, 
   Cell, 
-  Legend
+  Legend,
+  LineChart,
+  Line,
+  Area,
+  AreaChart
 } from "recharts";
 import { formatPrice, formatDate } from "@/lib/utils";
 
@@ -45,8 +72,8 @@ const groupOrdersByStatus = (orders: any[]) => {
   }));
 };
 
-// Dashboard analytics
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#FF0000'];
+// Dashboard analytics - Black/White/Red color scheme
+const COLORS = ['#000000', '#666666', '#CCCCCC', '#FF0000', '#FF6666'];
 
 export default function DashboardPage() {
   // Set page title
@@ -123,89 +150,127 @@ export default function DashboardPage() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Tableau de Bord</h1>
-        
-        {/* Stats cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Total Orders */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total des Commandes</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+
+        {/* Enhanced Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Total Orders Card */}
+          <Card className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+              <CardTitle className="text-sm font-semibold text-gray-600">Total des Commandes</CardTitle>
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <Package className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative z-10">
               {isLoadingOrders ? (
-                <Skeleton className="h-7 w-16" />
+                <Skeleton className="h-8 w-20" />
               ) : (
-                <div className="text-xl font-bold">{totalOrders}</div>
+                <div className="text-xl font-bold text-gray-900 mb-2">{totalOrders}</div>
               )}
-              <p className="text-xs text-muted-foreground">
-                +{pendingOrders} en attente
-              </p>
+              <div className="flex items-center space-x-2">
+                <Badge variant="secondary" className="bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg">
+                  +{pendingOrders} en attente
+                </Badge>
+                <ArrowUpRight className="h-4 w-4 text-green-500" />
+              </div>
             </CardContent>
           </Card>
-          
-          {/* Total Products */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total des Produits</CardTitle>
-              <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+
+          {/* Total Products Card */}
+          <Card className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+              <CardTitle className="text-sm font-semibold text-gray-600">Total des Produits</CardTitle>
+              <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <ShoppingBag className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative z-10">
               {isLoadingProducts ? (
-                <Skeleton className="h-7 w-16" />
+                <Skeleton className="h-8 w-20" />
               ) : (
-                <div className="text-xl font-bold">{totalProducts}</div>
+                <div className="text-xl font-bold text-gray-900 mb-2">{totalProducts}</div>
               )}
-              <p className="text-xs text-muted-foreground">
-                {hoodieCount} hoodies, {tshirtCount} t-shirts
-              </p>
+              <div className="flex items-center space-x-2">
+                <Badge variant="secondary" className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-lg">
+                  {hoodieCount} hoodies
+                </Badge>
+                <Badge variant="secondary" className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 shadow-lg">
+                  {tshirtCount} t-shirts
+                </Badge>
+              </div>
             </CardContent>
           </Card>
-          
-          {/* Revenue */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revenu Total</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
+
+          {/* Revenue Card */}
+          <Card className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+            <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+              <CardTitle className="text-sm font-semibold text-gray-600">Revenu Total</CardTitle>
+              <div className="p-3 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <DollarSign className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative z-10">
               {isLoadingOrders ? (
-                <Skeleton className="h-7 w-24" />
+                <Skeleton className="h-8 w-32" />
               ) : (
-                <div className="text-xl font-bold">{formatPrice(totalRevenue)}</div>
+                <div className="text-xl font-bold text-gray-900 mb-2">{formatPrice(totalRevenue)}</div>
               )}
-              <p className="text-xs text-muted-foreground">
-                +{orders.filter((order: any) => order.status === 'delivered').length || 0} commandes livrées
-              </p>
+              <div className="flex items-center space-x-2">
+                <Badge variant="secondary" className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-lg">
+                  +{orders.filter((order: any) => order.status === 'delivered').length || 0} livrées
+                </Badge>
+                <TrendingUp className="h-4 w-4 text-green-500" />
+              </div>
             </CardContent>
           </Card>
-          
-          {/* Average Visitors Per Day */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Visiteurs Moyens / Jour</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+
+          {/* Visitors Card */}
+          <Card className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+              <CardTitle className="text-sm font-semibold text-gray-600">Visiteurs / Jour</CardTitle>
+              <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <Users className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-xl font-bold">{averageVisitorsPerDay}</div>
-              <p className="text-xs text-muted-foreground">Toujours plus de 0 visiteurs !</p>
+            <CardContent className="relative z-10">
+              <div className="text-xl font-bold text-gray-900 mb-2">{averageVisitorsPerDay}</div>
+              <div className="flex items-center space-x-2">
+                <Badge variant="secondary" className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 shadow-lg">
+                  Actif
+                </Badge>
+                <Activity className="h-4 w-4 text-purple-500 animate-pulse" />
+              </div>
             </CardContent>
           </Card>
         </div>
         
-        {/* Charts and tables */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Order Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Statut des Commandes</CardTitle>
+        {/* Enhanced Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Order Status Chart */}
+          <Card className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50 border-0 shadow-xl hover:shadow-2xl transition-all duration-500">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardHeader className="relative z-10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg">
+                    <BarChart3 className="h-5 w-5 text-white" />
+                  </div>
+                  <CardTitle className="text-lg font-bold text-gray-900">Statut des Commandes</CardTitle>
+                </div>
+                <Badge variant="secondary" className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-lg">
+                  {totalOrders} Total
+                </Badge>
+              </div>
             </CardHeader>
-            <CardContent className="h-80">
+            <CardContent className="relative z-10 h-80">
               {isLoadingOrders ? (
                 <div className="flex items-center justify-center h-full">
-                  <Skeleton className="h-full w-full" />
+                  <Skeleton className="h-full w-full rounded-lg" />
                 </div>
               ) : statusDataFull.length > 0 ? (
                 <>
@@ -216,48 +281,64 @@ export default function DashboardPage() {
                       margin={{ top: 20, right: 40, left: 40, bottom: 5 }}
                       barCategoryGap={30}
                     >
-                      <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                      <XAxis type="number" allowDecimals={false} tick={{ fontWeight: 600, fontSize: 14 }} />
-                      <YAxis type="category" dataKey="name" tick={{ fontWeight: 600, fontSize: 15 }} width={120} />
-                      <Tooltip formatter={(value) => [`${value} commandes`, '']} />
-                      <Bar dataKey="value" name="Nombre de commandes" radius={[0, 8, 8, 0]} barSize={32}>
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f3f4f6" />
+                      <XAxis 
+                        type="number" 
+                        allowDecimals={false} 
+                        tick={{ fontWeight: 500, fontSize: 12, fill: '#374151' }}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                        tickLine={{ stroke: '#e5e7eb' }}
+                      />
+                      <YAxis 
+                        type="category" 
+                        dataKey="name" 
+                        tick={{ fontWeight: 500, fontSize: 12, fill: '#374151' }} 
+                        width={100}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                        tickLine={{ stroke: '#e5e7eb' }}
+                      />
+                      <Tooltip 
+                        formatter={(value) => [`${value} commandes`, '']}
+                        contentStyle={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                          fontSize: '12px'
+                        }}
+                        labelStyle={{ color: '#374151', fontWeight: 600 }}
+                      />
+                      <Bar 
+                        dataKey="value" 
+                        name="Nombre de commandes" 
+                        radius={[0, 4, 4, 0]} 
+                        barSize={24}
+                        fill="#000000"
+                      >
                         {statusDataFull.map((entry, index) => (
-                          <Cell key={`cell-bar-h-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                        {/* Value labels at the end of bars */}
-                        {statusDataFull.map((entry, index) => (
-                          <text
-                            key={`label-bar-h-${index}`}
-                            x={entry.value * 40 + 60}
-                            y={index * (100 / statusDataFull.length) + 45}
-                            dx={0}
-                            dy={-10}
-                            textAnchor="start"
-                            fontSize={15}
-                            fontWeight={700}
-                            fill="#222"
-                            style={{ pointerEvents: 'none' }}
-                          >
-                            {entry.value > 0 ? entry.value : ''}
-                          </text>
+                          <Cell 
+                            key={`cell-bar-h-${index}`} 
+                            fill={COLORS[index % COLORS.length]}
+                            stroke={COLORS[index % COLORS.length]}
+                            strokeWidth={1}
+                          />
                         ))}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
-                  {/* Custom Legend for Order Status */}
-                  <div className="flex justify-center gap-2 mt-1 flex-wrap">
+                  <div className="flex justify-center gap-3 mt-4 flex-wrap">
                     {statusDataFull.map((entry, index) => (
-                      <div key={entry.name} className="flex items-center gap-1">
+                      <div key={entry.name} className="flex items-center gap-2 bg-white/50 px-3 py-2 rounded-lg shadow-sm">
                         <span
                           style={{
                             backgroundColor: COLORS[index % COLORS.length],
                             width: 12,
                             height: 12,
-                            borderRadius: 3,
+                            borderRadius: 6,
                             display: 'inline-block',
                           }}
                         ></span>
-                        <span className="font-semibold text-xs" style={{ color: COLORS[index % COLORS.length] }}>
+                        <span className="font-semibold text-sm text-gray-700">
                           {entry.name}
                         </span>
                       </div>
@@ -266,141 +347,249 @@ export default function DashboardPage() {
                 </>
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <p className="text-muted-foreground">Aucune donnée disponible</p>
+                  <div className="text-center">
+                    <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500 font-medium">Aucune donnée disponible</p>
+                  </div>
                 </div>
               )}
             </CardContent>
           </Card>
           
-          {/* Product Categories */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Répartition des Produits</CardTitle>
+          {/* Product Categories Chart */}
+          <Card className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50 border-0 shadow-xl hover:shadow-2xl transition-all duration-500">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <CardHeader className="relative z-10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg">
+                    <PieChartIcon className="h-5 w-5 text-white" />
+                  </div>
+                  <CardTitle className="text-lg font-bold text-gray-900">Répartition des Produits</CardTitle>
+                </div>
+                <Badge variant="secondary" className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-lg">
+                  {totalProducts} Total
+                </Badge>
+              </div>
             </CardHeader>
-            <CardContent className="h-80 flex flex-col justify-between">
+            <CardContent className="relative z-10 h-80 flex flex-col justify-between">
               {isLoadingProducts ? (
                 <div className="flex items-center justify-center h-full">
-                  <Skeleton className="h-full w-full" />
+                  <Skeleton className="h-full w-full rounded-lg" />
                 </div>
               ) : categoryChartData.length > 0 ? (
                 <>
                   <ResponsiveContainer width="100%" height="85%">
-                  <BarChart
-                    data={categoryChartData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    <BarChart
+                      data={categoryChartData}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                       barCategoryGap={30}
-                  >
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" tick={{ fontWeight: 600, fontSize: 14 }} />
-                      <YAxis allowDecimals={false} tick={{ fontWeight: 600, fontSize: 14 }} />
-                    <Tooltip formatter={(value) => [`${value} produits`, '']} />
-                      <Bar dataKey="value" name="Nombre de produits" radius={[8, 8, 0, 0]} barSize={38}>
+                    >
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fontWeight: 500, fontSize: 12, fill: '#374151' }}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                        tickLine={{ stroke: '#e5e7eb' }}
+                      />
+                      <YAxis 
+                        allowDecimals={false} 
+                        tick={{ fontWeight: 500, fontSize: 12, fill: '#374151' }}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                        tickLine={{ stroke: '#e5e7eb' }}
+                      />
+                      <Tooltip 
+                        formatter={(value) => [`${value} produits`, '']}
+                        contentStyle={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                          fontSize: '12px'
+                        }}
+                        labelStyle={{ color: '#374151', fontWeight: 600 }}
+                      />
+                      <Bar 
+                        dataKey="value" 
+                        name="Nombre de produits" 
+                        radius={[4, 4, 0, 0]} 
+                        barSize={32}
+                        fill="#000000"
+                      >
                         {categoryChartData.map((entry, index) => (
-                          <Cell key={`cell-bar-cat-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                        {/* Value labels above bars */}
-                        {categoryChartData.map((entry, index) => (
-                          <text
-                            key={`label-bar-cat-${index}`}
-                            x={index * (100 / categoryChartData.length) + 10 + '%'}
-                            y={60}
-                            dx={0}
-                            dy={-10}
-                            textAnchor="middle"
-                            fontSize={14}
-                            fontWeight={700}
-                            fill="#222"
-                            style={{ pointerEvents: 'none' }}
-                          >
-                            {entry.value > 0 ? entry.value : ''}
-                          </text>
+                          <Cell 
+                            key={`cell-bar-cat-${index}`} 
+                            fill={COLORS[index % COLORS.length]}
+                            stroke={COLORS[index % COLORS.length]}
+                            strokeWidth={1}
+                          />
                         ))}
                       </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                  {/* Custom Legend */}
-                  <div className="flex justify-center gap-6 mt-2">
+                    </BarChart>
+                  </ResponsiveContainer>
+                  <div className="flex justify-center gap-4 mt-4 flex-wrap">
                     {categoryChartData.map((entry, index) => (
-                      <div key={`legend-cat-${index}`} className="flex items-center gap-2">
-                        <span style={{ backgroundColor: COLORS[index % COLORS.length], width: 16, height: 16, borderRadius: 4, display: 'inline-block' }}></span>
-                        <span className="font-semibold" style={{ color: COLORS[index % COLORS.length] }}>{entry.name}</span>
+                      <div key={`legend-cat-${index}`} className="flex items-center gap-2 bg-white/50 px-3 py-2 rounded-lg shadow-sm">
+                        <span 
+                          style={{ 
+                            backgroundColor: COLORS[index % COLORS.length], 
+                            width: 12, 
+                            height: 12, 
+                            borderRadius: 6, 
+                            display: 'inline-block' 
+                          }}
+                        ></span>
+                        <span className="font-semibold text-sm text-gray-700">{entry.name}</span>
                       </div>
                     ))}
                   </div>
                 </>
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <p className="text-muted-foreground">Aucune donnée disponible</p>
+                  <div className="text-center">
+                    <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500 font-medium">Aucune donnée disponible</p>
+                  </div>
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
         
-        {/* Recent Orders */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Commandes Récentes</CardTitle>
+        {/* Enhanced Recent Orders Section */}
+        <Card className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50 border-0 shadow-xl hover:shadow-2xl transition-all duration-500">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <CardHeader className="relative z-10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg shadow-lg">
+                  <Clock className="h-5 w-5 text-white" />
+                </div>
+                <CardTitle className="text-lg font-bold text-gray-900">Commandes Récentes</CardTitle>
+              </div>
+              <Button 
+                variant="outline" 
+                className="bg-white/50 border-gray-200 text-gray-700 hover:bg-white hover:border-gray-300 transition-all duration-300 hover:scale-105"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                Voir Tout
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
             {isLoadingOrders ? (
-              <div className="space-y-2">
+              <div className="space-y-4">
                 {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
+                  <div key={i} className="flex items-center space-x-4 p-4">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                    <Skeleton className="h-8 w-20" />
+                  </div>
                 ))}
               </div>
             ) : recentOrders.length > 0 ? (
               <div className="space-y-4">
-                {recentOrders.map((order: any) => {
-                  // Friendly order number: position in sorted list (oldest first)
+                {recentOrders.map((order: any, index: number) => {
                   const sorted = [...orders].sort(
                     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
                   );
                   const idx = sorted.findIndex(o => o.id === order.id);
                   const friendlyOrderNumber = idx >= 0 ? idx + 1 : order.id;
+                  
+                  const getStatusConfig = (status: string) => {
+                    const configs = {
+                      pending: { 
+                        label: 'En attente', 
+                        icon: Clock, 
+                        className: 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 shadow-lg',
+                        bgColor: 'from-yellow-500/10 to-orange-500/10'
+                      },
+                      processing: { 
+                        label: 'En traitement', 
+                        icon: Activity, 
+                        className: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-lg',
+                        bgColor: 'from-blue-500/10 to-blue-600/10'
+                      },
+                      shipped: { 
+                        label: 'Expédiée', 
+                        icon: Truck, 
+                        className: 'bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 shadow-lg',
+                        bgColor: 'from-purple-500/10 to-purple-600/10'
+                      },
+                      delivered: { 
+                        label: 'Livrée', 
+                        icon: CheckCircle, 
+                        className: 'bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-lg',
+                        bgColor: 'from-green-500/10 to-green-600/10'
+                      },
+                      cancelled: { 
+                        label: 'Annulée', 
+                        icon: XCircle, 
+                        className: 'bg-gradient-to-r from-red-500 to-red-600 text-white border-0 shadow-lg',
+                        bgColor: 'from-red-500/10 to-red-600/10'
+                      }
+                    };
+                    return configs[status as keyof typeof configs] || configs.pending;
+                  };
+                  
+                  const statusConfig = getStatusConfig(order.status);
+                  const StatusIcon = statusConfig.icon;
+                  
                   return (
-                  <div key={order.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
-                    <div className="flex flex-col">
-                        <span className="font-medium">Commande #{friendlyOrderNumber}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {formatDate(order.createdAt)} - {order.customerName}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div>
-                        <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full uppercase"
-                          style={{
-                            backgroundColor: 
-                              order.status === 'delivered' ? 'rgba(0, 196, 159, 0.2)' :
-                              order.status === 'shipped' ? 'rgba(0, 136, 254, 0.2)' :
-                              order.status === 'processing' ? 'rgba(255, 187, 40, 0.2)' :
-                              order.status === 'cancelled' ? 'rgba(255, 0, 0, 0.2)' :
-                              'rgba(150, 150, 150, 0.2)',
-                            color:
-                              order.status === 'delivered' ? 'rgb(0, 196, 159)' :
-                              order.status === 'shipped' ? 'rgb(0, 136, 254)' :
-                              order.status === 'processing' ? 'rgb(255, 187, 40)' :
-                              order.status === 'cancelled' ? 'rgb(255, 0, 0)' :
-                              'rgb(150, 150, 150)'
-                          }}
-                        >
-                          {order.status === 'pending' ? 'En attente' :
-                           order.status === 'processing' ? 'En traitement' :
-                           order.status === 'shipped' ? 'Expédiée' :
-                           order.status === 'delivered' ? 'Livrée' :
-                           order.status === 'cancelled' ? 'Annulée' : order.status}
-                        </span>
+                    <div 
+                      key={order.id} 
+                      className={`group/order relative overflow-hidden bg-gradient-to-r ${statusConfig.bgColor} border border-gray-200/50 rounded-xl p-4 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-gray-300`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="relative">
+                            <div className="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center shadow-lg group-hover/order:scale-110 transition-transform duration-300">
+                              <StatusIcon className="h-6 w-6 text-gray-600" />
+                            </div>
+                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                              <span className="text-xs font-bold text-white">{index + 1}</span>
+                            </div>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-bold text-gray-900 text-sm">
+                              Commande #{friendlyOrderNumber}
+                            </span>
+                            <div className="flex items-center space-x-2 text-sm text-gray-600">
+                              <Calendar className="h-4 w-4" />
+                              <span>{formatDate(order.createdAt)}</span>
+                              <span>•</span>
+                              <span className="font-medium">{order.customerName}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          <Badge className={statusConfig.className}>
+                            <StatusIcon className="h-3 w-3 mr-1" />
+                            {statusConfig.label}
+                          </Badge>
+                          <div className="text-right">
+                            <div className="text-lg font-bold text-gray-900">
+                              {formatPrice(order.total)}
+                            </div>
+                            <div className="text-xs text-gray-500">Total</div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <span className="font-bold">{formatPrice(order.total)}</span>
-                      </div>
                     </div>
-                  </div>
                   );
                 })}
               </div>
             ) : (
-              <p className="text-center py-4 text-muted-foreground">Aucune commande récente</p>
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Package className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune commande récente</h3>
+                <p className="text-gray-500">Les nouvelles commandes apparaîtront ici</p>
+              </div>
             )}
           </CardContent>
         </Card>

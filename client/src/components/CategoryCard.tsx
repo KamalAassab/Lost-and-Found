@@ -11,7 +11,7 @@ interface CategoryCardProps {
 
 export default function CategoryCard({ title, description, imageUrl, slug }: CategoryCardProps) {
   return (
-    <div className="relative group overflow-hidden h-[300px] md:h-[350px] rounded-xl shadow-md transition-transform duration-300 hover:scale-105 hover:shadow-xl cursor-pointer">
+    <div className="relative group overflow-hidden aspect-square w-full rounded-xl shadow-md transition-transform duration-300 hover:scale-105 hover:shadow-xl cursor-pointer">
       <img
         src={imageUrl}
         alt={`${title} collection`}

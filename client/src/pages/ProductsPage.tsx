@@ -19,8 +19,9 @@ export default function ProductsPage() {
   
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  const [filter, setFilter] = useState<string>(category || "all");
+  const [filter, setFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortOption>("price_asc");
+  
   
   // Debounced search handler
   const debouncedSearch = useCallback(
@@ -41,6 +42,8 @@ export default function ProductsPage() {
   useEffect(() => {
     if (category) {
       setFilter(category);
+    } else {
+      setFilter("all");
     }
   }, [category]);
   
@@ -61,7 +64,7 @@ export default function ProductsPage() {
     enabled: true,
   });
 
-  const displayProducts = products;
+  const displayProducts = (products as any[]) || [];
 
   const handleFilterChange = (value: string) => {
     setFilter(value);
@@ -176,7 +179,7 @@ export default function ProductsPage() {
           </div>
 
           {/* Products grid */}
-          {!isStaticDeployment && isLoading ? (
+          {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-8">
               {[...Array(8)].map((_, index) => (
                 <div key={index} className="bg-transparent">
@@ -184,7 +187,7 @@ export default function ProductsPage() {
                 </div>
               ))}
             </div>
-          ) : !isStaticDeployment && error ? (
+          ) : error ? (
             <div className="text-center py-16 bg-white rounded-2xl shadow-md">
               <Search className="mx-auto h-12 w-12 text-gray-300 mb-4" />
               <h3 className="text-xl font-semibold mb-2">Aucun produit trouvé</h3>

@@ -29,6 +29,7 @@ import { Loader2 } from "lucide-react";
 import TermsPage from "@/pages/TermsPage";
 import PrivacyPage from "@/pages/PrivacyPage";
 import AdminUsersPage from "@/pages/admin/AdminUsersPage";
+import { ProfessionalLoader } from "@/components/ui/professional-loader";
 
 function AppRouter() {
   return (
@@ -92,9 +93,15 @@ function AppWithAuthLoading() {
   const { isLoading } = useAuth();
   if (isLoading) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
-        <Loader2 className="h-12 w-12 animate-spin text-black" />
-      </div>
+      <ProfessionalLoader 
+        title="LOST & FOUND"
+        subtitle="Initialisation"
+        loadingSteps={[
+          "Vérification de l'authentification",
+          "Chargement de l'application",
+          "Préparation de l'interface"
+        ]}
+      />
     );
   }
   return (

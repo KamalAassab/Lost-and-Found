@@ -30,7 +30,7 @@ export default function Header({ toggleCart }: HeaderProps) {
     enabled: true,
   });
 
-  const displayProducts = products;
+  const displayProducts = (products as any[]) || [];
 
   // Filter products by search query
   const searchResults = searchQuery.trim()
@@ -82,7 +82,7 @@ export default function Header({ toggleCart }: HeaderProps) {
   // Scroll event to shrink navbar and hide promo
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 30);
+      setScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -103,21 +103,21 @@ export default function Header({ toggleCart }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-black border-b border-neutral-800 shadow-sm transition-all duration-300">
+    <header className={cn("sticky top-0 z-50 bg-black border-b border-neutral-800 transition-all duration-300", scrolled ? "shadow-lg" : "shadow-sm")}>
       {/* Top promo banner */}
-      <div className={cn("bg-accent text-white py-1 text-center font-bebas tracking-wider text-xs md:text-sm transition-all duration-300", scrolled && "hidden")}> 
+      <div className={cn("bg-accent text-white py-1 text-center font-bebas tracking-wider text-xs md:text-sm transition-all duration-300", scrolled && "transform -translate-y-full opacity-0")}> 
         <p>LIVRAISON GRATUITE POUR LES COMMANDES DE PLUS DE 500 MAD</p>
       </div>
 
       {/* Navigation bar */}
-      <nav className={cn("container mx-auto px-4 flex flex-wrap items-center justify-between relative transition-all duration-300", scrolled ? "py-2" : "py-4")}>
+      <nav className={cn("container mx-auto px-4 flex flex-wrap items-center justify-between relative transition-all duration-300", scrolled ? "py-1" : "py-4")}>
         {/* Logo */}
         <Link href="/" className="text-2xl md:text-3xl font-bold font-montserrat tracking-wider ml-2 text-white">
-          <ShopLogo className={cn("transition-all duration-300", scrolled ? "h-8" : "h-12")} />
+          <ShopLogo className={cn("transition-all duration-300", scrolled ? "h-6" : "h-12")} />
         </Link>
 
         {/* Menu */}
-        <div className="hidden md:flex space-x-8 text-base font-semibold">
+        <div className={cn("hidden md:flex space-x-8 font-semibold transition-all duration-300", scrolled ? "text-sm space-x-6" : "text-base space-x-8")}>
           <Link href="/" className={cn(
             "relative group transition-all duration-300 hover:text-neutral-300 text-white px-2 py-1",
             isActive('/') && "text-accent"
@@ -160,7 +160,7 @@ export default function Header({ toggleCart }: HeaderProps) {
                 onClick={() => setIsSearchOpen(true)}
                 aria-label="Ouvrir la recherche"
               >
-                <Search className="h-5 w-5 transition-all duration-300" />
+                <Search className={cn("transition-all duration-300", scrolled ? "h-4 w-4" : "h-5 w-5")} />
               </Button>
             ) : (
               <Input
@@ -187,7 +187,7 @@ export default function Header({ toggleCart }: HeaderProps) {
                     className="block px-4 py-3 hover:bg-neutral-100 border-b last:border-b-0 border-neutral-200 transition"
                   >
                     <div className="flex items-center gap-3">
-                      <img src={`/uploads/${product.image}`} alt={product.name} className="w-12 h-12 object-cover rounded" />
+                      <img src={product.imageUrl} alt={product.name} className="w-12 h-12 object-cover rounded" />
                       <div>
                         <div className="font-semibold">{product.name}</div>
                         <div className="text-xs text-neutral-500 line-clamp-1">{product.description}</div>
@@ -212,7 +212,7 @@ export default function Header({ toggleCart }: HeaderProps) {
               size="icon" 
               className="transition duration-300 text-white hover:bg-accent hover:text-white focus:bg-accent focus:text-white"
             >
-              <User className="h-5 w-5" />
+              <User className={cn("transition-all duration-300", scrolled ? "h-4 w-4" : "h-5 w-5")} />
             </Button>
           </Link>
           <Link href="/cart">
@@ -221,9 +221,9 @@ export default function Header({ toggleCart }: HeaderProps) {
               size="icon"
               className="transition duration-300 text-white hover:bg-accent hover:text-white focus:bg-accent focus:text-white relative"
             >
-              <ShoppingBag className="h-5 w-5" />
+              <ShoppingBag className={cn("transition-all duration-300", scrolled ? "h-4 w-4" : "h-5 w-5")} />
               {totalOrders > 0 && (
-                <Badge className="absolute -top-1 -right-1 bg-accent hover:bg-accent text-white text-xs w-5 h-5 flex items-center justify-center p-0 rounded-full">
+                <Badge className={cn("absolute -top-1 -right-1 bg-accent hover:bg-accent text-white flex items-center justify-center p-0 rounded-full transition-all duration-300", scrolled ? "text-xs w-4 h-4" : "text-xs w-5 h-5")}>
                   {totalOrders}
                 </Badge>
               )}
@@ -235,7 +235,7 @@ export default function Header({ toggleCart }: HeaderProps) {
             className="md:hidden transition duration-300 text-white hover:bg-accent hover:text-white focus:bg-accent focus:text-white"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {mobileMenuOpen ? <X className={cn("transition-all duration-300", scrolled ? "h-5 w-5" : "h-6 w-6")} /> : <Menu className={cn("transition-all duration-300", scrolled ? "h-5 w-5" : "h-6 w-6")} />}
           </Button>
         </div>
       </nav>

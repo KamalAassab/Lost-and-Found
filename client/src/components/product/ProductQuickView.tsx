@@ -15,7 +15,7 @@ interface ProductQuickViewProps {
     id: number;
     name: string;
     slug: string;
-    image: string;
+    imageUrl: string;
     price: string | number;
     oldPrice?: string | number | null;
     category: string | { name: string; id: number; slug: string; };
@@ -87,7 +87,7 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
       size: selectedSize,
       price: Number(product.price),
       name: product.name,
-      imageUrl: `/uploads/${product.image}`,
+      imageUrl: product.imageUrl,
       category: categoryValue
     });
     onClose();
@@ -141,7 +141,7 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 max-h-[70vh] overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar">
           <div>
             <img
-              src={`/uploads/${(product as any).image || (product as any).imageUrl}`}
+              src={(product as any).imageUrl || `/${(product as any).image}`}
               alt={product.name}
               className="w-full h-auto object-cover"
             />

@@ -5,18 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
 import { ProductQuickView } from "@/components/product/ProductQuickView";
-import { EyeIcon, ShoppingBag, Heart } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import { AuthPopup } from "@/components/auth/AuthPopup";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { ShoppingBag } from "lucide-react";
 
 interface ProductCardProps {
   product: {
     id: number;
     name: string;
     slug: string;
-    image: string;
+    imageUrl: string;
     price: string | number;
     oldPrice?: string | number | null;
     category: string | { name: string; id: number; slug: string; };
@@ -27,12 +23,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, compact = false }: ProductCardProps) {
   const [showQuickView, setShowQuickView] = React.useState(false);
-  const [showAuthPopup, setShowAuthPopup] = React.useState(false);
-  const [isAddingWishlist, setIsAddingWishlist] = React.useState(false);
-  const [wishlistAdded, setWishlistAdded] = React.useState(false);
   const { addToCart } = useCart();
-  const { user } = useAuth();
-  const { toast } = useToast();
 
   const hasDiscount = product.oldPrice != null;
   const discountPercentage = hasDiscount
@@ -58,102 +49,70 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
         size: "M", // Default size
         price: Number(product.price),
         name: product.name,
-        imageUrl: product.image,
+        imageUrl: product.imageUrl,
         category: categoryValue
       });
     }
   };
 
-  const handleToggleWishlist = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
 
-    if (!user) {
-      setShowAuthPopup(true);
-      return;
-    }
-
-    setIsAddingWishlist(true);
-    try {
-      if (wishlistAdded) {
-        await apiRequest("DELETE", `/api/wishlist/${product.id}`);
-        setWishlistAdded(false);
-        toast({ title: "Retiré de la liste de souhaits", description: "Ce produit a été retiré de votre liste de souhaits." });
-      } else {
-        await apiRequest("POST", "/api/wishlist", { productId: product.id });
-        setWishlistAdded(true);
-        toast({ title: "Ajouté à la liste de souhaits", description: "Ce produit a été ajouté à votre liste de souhaits." });
-      }
-    } catch (error: any) {
-      toast({ title: "Erreur", description: error?.message || "Erreur lors de la mise à jour de la liste de souhaits", variant: "destructive" });
-    } finally {
-      setIsAddingWishlist(false);
-    }
-  };
-
-  // Compact style classes
-  const cardPadding = compact ? "p-3" : "p-4 flex flex-col items-start w-full";
-  const imageHeight = compact ? "h-[120px] md:h-[140px] xl:h-[150px]" : "h-[260px]";
-  const titleClass = compact ? "font-semibold text-xs text-black mb-1 truncate w-full" : "text-lg font-medium mb-2 group-hover:text-black transition-colors duration-300";
-  const priceClass = compact ? "text-accent font-bold text-base" : "text-xl font-bold";
-  const oldPriceClass = compact ? "text-neutral-400 line-through text-xs" : "text-neutral-500 line-through text-sm";
+  // Compact and elegant style classes
+  const cardPadding = compact ? "p-4" : "p-6 flex flex-col items-start w-full";
+  const imageHeight = compact ? "h-[180px] md:h-[200px] xl:h-[220px]" : "h-[300px]";
+  const titleClass = compact ? "font-semibold text-sm text-gray-900 mb-2 line-clamp-2 leading-tight" : "text-xl font-semibold mb-3 group-hover:text-black transition-colors duration-300";
+  const priceClass = compact ? "text-black font-bold text-lg" : "text-2xl font-bold";
+  const oldPriceClass = compact ? "text-gray-400 line-through text-sm" : "text-gray-500 line-through text-lg";
   const buttonSize = compact ? "w-8 h-8" : "w-10 h-10";
   const iconSize = compact ? 16 : 20;
 
   return (
     <>
-      <div className={`bg-white group relative rounded-xl shadow-md border border-neutral-200 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:border-black ${compact ? 'text-xs' : ''}`}>
-        <div className={`relative overflow-hidden bg-neutral-100 flex items-center justify-center ${imageHeight}`}>
-          <Link href={`/product/${product.slug}`} className="block w-full h-full">
+      <div className={`bg-white group relative rounded-3xl shadow-xl border border-gray-200/50 overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-3 hover:border-gray-300 ${compact ? 'text-base' : ''}`}>
+        {/* Spacious image container */}
+        <div className={`relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center ${imageHeight}`}>
+          <Link href={`/product/${product.slug}`} className="block w-full h-full group/image">
             <img
-              src={`/uploads/${product.image}`}
+              src={product.imageUrl}
               alt={product.name}
-              className={`w-full h-full object-contain transition-transform duration-300 group-hover:scale-110 ${compact ? '' : ''}`}
-              style={compact ? { maxHeight: 150 } : {}}
+              className="w-full h-full object-contain transition-all duration-500 group-hover/image:scale-105"
+              style={compact ? { maxHeight: 250 } : {}}
             />
+            {/* Elegant discount badge */}
             {hasDiscount && (
-              <div className={`absolute top-2 left-2 bg-accent text-white py-1 px-2 ${compact ? 'text-[10px] rounded' : 'text-xs font-bold rounded-lg'} shadow`}>
+              <div className={`absolute top-4 left-4 bg-gradient-to-r from-red-500 to-red-600 text-white py-2 px-4 ${compact ? 'text-sm rounded-xl' : 'text-base font-bold rounded-2xl'} shadow-xl backdrop-blur-sm border border-red-400/30`}>
                 -{discountPercentage}%
               </div>
             )}
+            {/* Subtle overlay on hover */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/3 transition-all duration-500"></div>
           </Link>
-          {/* Hover overlay for action buttons */}
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-            <div className="flex gap-2">
-              {/* Show only quick view and wishlist buttons for all cards */}
-              <Button 
-                className={`${buttonSize} flex items-center justify-center bg-white text-black hover:bg-black hover:text-white rounded-full p-0 transition-colors duration-200 border border-black shadow`}
-                onClick={e => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setShowQuickView(true);
-                }}
-                aria-label="Voir le produit"
-              >
-                <EyeIcon className="h-4 w-4" style={{ width: iconSize, height: iconSize }} />
-              </Button>
-              <Button
-                className={`${buttonSize} flex items-center justify-center bg-white text-black hover:bg-black hover:text-white rounded-full p-0 transition-colors duration-200 border border-black shadow`}
-                onClick={handleToggleWishlist}
-                disabled={isAddingWishlist}
-                aria-label={wishlistAdded ? "Retirer de la liste de souhaits" : "Ajouter à la liste de souhaits"}
-              >
-                <Heart className={`h-4 w-4 ${wishlistAdded ? 'fill-current' : ''}`} style={{ width: iconSize, height: iconSize }} />
-              </Button>
-            </div>
-          </div>
         </div>
+        
+        {/* Spacious content area */}
         <div className={cardPadding}>
-          <Link href={`/product/${product.slug}`} className="block w-full">
-            <h3 className={titleClass} title={product.name}>{product.name}</h3>
+          <Link href={`/product/${product.slug}`} className="block w-full group/title">
+            <h3 className={`${titleClass} group-hover/title:text-gray-800 transition-colors duration-300`} title={product.name}>
+              {product.name}
+            </h3>
           </Link>
-          <div className="flex items-center gap-2 w-full mt-1">
-            <span className={priceClass}>{formatPrice(product.price)}</span>
+          
+          {/* Compact price section */}
+          <div className="flex items-center justify-between w-full mt-3">
+            <div className="flex items-baseline gap-2">
+              <span className={`${priceClass} text-gray-900`}>{formatPrice(product.price)}</span>
               {hasDiscount && (
-              <span className={oldPriceClass}>{formatPrice(product.oldPrice!)}</span>
+                <span className={`${oldPriceClass} text-gray-400`}>{formatPrice(product.oldPrice!)}</span>
               )}
             </div>
           </div>
+          
+          {/* Compact category badge */}
+          <div className="mt-3">
+            <span className="inline-block text-sm font-medium text-gray-600 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200 uppercase">
+              {typeof product.category === 'object' ? product.category.name : product.category}
+            </span>
+          </div>
+        </div>
       </div>
 
       {showQuickView && (
@@ -164,10 +123,6 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
         />
       )}
 
-      <AuthPopup 
-        open={showAuthPopup} 
-        onClose={() => setShowAuthPopup(false)} 
-      />
     </>
   );
 }

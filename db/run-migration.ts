@@ -104,30 +104,30 @@ async function main() {
       // Now run the migration SQL, MySQL compatible, robust to missing columns/constraints
       try {
         await connection.query(`ALTER TABLE \`orders\` MODIFY COLUMN \`payment_method\` ENUM('credit_card', 'debit_card', 'paypal', 'bank_transfer') NOT NULL;`);
-      } catch (e) { console.warn('Warning (payment_method):', e.message); }
+      } catch (e) { console.warn('Warning (payment_method):', (e as Error).message); }
 
       // Remove sensitive payment information from orders table
       for (const col of ['cardNumber', 'expiryDate', 'cardName']) {
         try {
           await connection.query(`ALTER TABLE \`orders\` DROP COLUMN \`${col}\`;`);
-        } catch (e) { console.warn(`Warning (drop column ${col}):`, e.message); }
+        } catch (e) { console.warn(`Warning (drop column ${col}):`, (e as Error).message); }
       }
 
       // Add proper foreign key constraints
       try {
         await connection.query(`ALTER TABLE \`products\` ADD CONSTRAINT \`products_category_id_fk\` FOREIGN KEY (\`category_id\`) REFERENCES \`categories\`(\`id\`) ON DELETE RESTRICT ON UPDATE CASCADE;`);
-      } catch (e) { console.warn('Warning (products_category_id_fk):', e.message); }
+      } catch (e) { console.warn('Warning (products_category_id_fk):', (e as Error).message); }
       try {
         await connection.query(`ALTER TABLE \`wishlists\` ADD CONSTRAINT \`wishlists_user_id_fk\` FOREIGN KEY (\`user_id\`) REFERENCES \`users\`(\`id\`) ON DELETE CASCADE ON UPDATE CASCADE;`);
-      } catch (e) { console.warn('Warning (wishlists_user_id_fk):', e.message); }
+      } catch (e) { console.warn('Warning (wishlists_user_id_fk):', (e as Error).message); }
       try {
         await connection.query(`ALTER TABLE \`wishlists\` ADD CONSTRAINT \`wishlists_product_id_fk\` FOREIGN KEY (\`product_id\`) REFERENCES \`products\`(\`id\`) ON DELETE CASCADE ON UPDATE CASCADE;`);
-      } catch (e) { console.warn('Warning (wishlists_product_id_fk):', e.message); }
+      } catch (e) { console.warn('Warning (wishlists_product_id_fk):', (e as Error).message); }
 
       // Add unique constraint to prevent duplicate wishlist entries
       try {
         await connection.query(`ALTER TABLE \`wishlists\` ADD CONSTRAINT \`wishlists_user_product_unique\` UNIQUE (\`user_id\`, \`product_id\`);`);
-      } catch (e) { console.warn('Warning (wishlists_user_product_unique):', e.message); }
+      } catch (e) { console.warn('Warning (wishlists_user_product_unique):', (e as Error).message); }
 
       // Add indexes for better query performance
       for (const idx of [
@@ -140,13 +140,13 @@ async function main() {
       ]) {
         try {
           await connection.query(`CREATE INDEX \`${idx.name}\` ON \`${idx.table}\` (\`${idx.col}\`);`);
-        } catch (e) { console.warn(`Warning (index ${idx.name}):`, e.message); }
+        } catch (e) { console.warn(`Warning (index ${idx.name}):`, (e as Error).message); }
       }
 
       // Fix price column type in order_items
       try {
         await connection.query(`ALTER TABLE \`order_items\` MODIFY COLUMN \`price\` DECIMAL(10,2) NOT NULL;`);
-      } catch (e) { console.warn('Warning (order_items.price):', e.message); }
+      } catch (e) { console.warn('Warning (order_items.price):', (e as Error).message); }
 
       // Add unique constraints if they don't exist
       for (const unique of [
@@ -157,7 +157,7 @@ async function main() {
       ]) {
         try {
           await connection.query(`ALTER TABLE \`${unique.table}\` ADD CONSTRAINT \`${unique.name}\` UNIQUE (\`${unique.col}\`);`);
-        } catch (e) { console.warn(`Warning (unique ${unique.name}):`, e.message); }
+        } catch (e) { console.warn(`Warning (unique ${unique.name}):`, (e as Error).message); }
       }
 
       console.log('Migration completed successfully!');

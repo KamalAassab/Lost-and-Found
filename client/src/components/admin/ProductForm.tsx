@@ -26,7 +26,8 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Upload } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, Upload, Package, DollarSign, Tag, Image, Settings, Save, X } from "lucide-react";
 
 // Define the product schema type
 type ProductSchemaType = {
@@ -89,7 +90,7 @@ interface ProductPayload {
 export default function ProductForm({ product, categories, onClose }: ProductFormProps) {
   const { toast } = useToast();
   const [isGeneratingSlug, setIsGeneratingSlug] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(product ? `/uploads/${product.image}` : null);
+  const [imagePreview, setImagePreview] = useState<string | null>(product ? product.imageUrl : null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
   // Available sizes
@@ -303,293 +304,372 @@ export default function ProductForm({ product, categories, onClose }: ProductFor
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit((data) => {
-        console.log("form.handleSubmit called", data);
-        onSubmit(data);
-      })} className="space-y-6 max-h-[85vh] overflow-y-auto pr-4 custom-scrollbar">
-        {/* Basic info */}
-        <div className="space-y-4 bg-gray-50/50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">Informations de base</h3>
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nom du produit</FormLabel>
-                <FormControl>
-                  <Input placeholder="Urban Black Hoodie" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <div className="grid grid-cols-[1fr,auto] gap-2">
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Slug</FormLabel>
-                  <FormControl>
-                    <Input placeholder="urban-black-hoodie" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Identifiant unique pour l'URL du produit
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              className="mt-8"
-              onClick={generateSlug}
-              disabled={!watchedName || isGeneratingSlug}
-            >
-              Générer
-            </Button>
-          </div>
-          
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Hoodie streetwear premium avec un design urbain minimaliste."
-                    rows={4}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          {/* Image upload */}
-          <div className="mt-4">
-            <FormLabel>Image du produit</FormLabel>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="cursor-pointer mt-2"
-            />
-            <FormDescription>
-              Téléchargez une image depuis votre ordinateur
-            </FormDescription>
-            {imagePreview && (
-              <div className="mt-4 flex items-center gap-2">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-32 h-32 object-cover rounded-lg"
+    <div className="w-full max-w-4xl mx-auto">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit((data) => {
+          console.log("form.handleSubmit called", data);
+          onSubmit(data);
+        })} className="space-y-4 max-h-[80vh] overflow-y-auto">
+          {/* Basic Information Card */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="bg-black text-white px-4 py-3">
+              <CardTitle className="flex items-center space-x-2 text-sm font-medium">
+                <Package className="h-4 w-4" />
+                <span>Informations de base</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 space-y-3">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Nom du produit</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Urban Black Hoodie" 
+                        className="h-9 text-sm border-gray-300 focus:border-red-500 focus:ring-red-500" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="grid grid-cols-[1fr,auto] gap-2">
+                <FormField
+                  control={form.control}
+                  name="slug"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">Slug</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="urban-black-hoodie" 
+                          className="h-9 text-sm border-gray-300 focus:border-red-500 focus:ring-red-500" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription className="text-xs text-gray-500">
+                        Identifiant unique pour l'URL du produit
+                      </FormDescription>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
                 />
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="ml-2 text-red-500 hover:text-red-700"
-                  onClick={() => {
-                    setImagePreview(null);
-                    setSelectedFile(null);
-                    form.setValue("image", "");
-                  }}
-                  aria-label="Supprimer l'image"
+                  variant="outline"
+                  className="mt-6 h-9 px-3 text-xs border-gray-300 hover:border-red-500 hover:text-red-600"
+                  onClick={generateSlug}
+                  disabled={!watchedName || isGeneratingSlug}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  Générer
                 </Button>
               </div>
-            )}
-          </div>
-        </div>
-        
-        {/* Pricing and category */}
-        <div className="bg-gray-50/50 p-4 rounded-lg space-y-4">
-          <h3 className="text-lg font-semibold mb-2">Prix et catégorie</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Prix (MAD)</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="1" min="1" placeholder="199" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="oldPrice"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ancien prix (optionnel)</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="1" min="1" placeholder="249" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Catégorie</FormLabel>
-                  {categories.length === 0 ? (
-                    <div className="text-sm text-gray-400">Aucune catégorie trouvée. Ajoutez-en une d'abord.</div>
-                  ) : (
-                    <Select
-                      onValueChange={(value) => {
-                        form.setValue("category", value as "hoodies" | "tshirts");
-                        field.onChange(value as "hoodies" | "tshirts");
-                        // Find matching category ID
-                        const selectedCategory = categories.find(
-                          c => c.slug === value || c.name.toLowerCase().replace(/\s|-/g, "") === value
-                        );
-                        if (selectedCategory) {
-                          form.setValue("categoryId", selectedCategory.id.toString());
-                        }
-                      }}
-                      defaultValue={field.value}
-                      disabled={categories.length === 0}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={categories.length === 0 ? "Chargement..." : "Sélectionner une catégorie"} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="hoodies">Hoodies</SelectItem>
-                        <SelectItem value="tshirts">T-shirts</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-        
-        {/* Size selection */}
-        <div className="space-y-4 bg-gray-50/50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">Tailles disponibles</h3>
-          <div className="flex flex-wrap gap-2">
-            {availableSizes.map((size) => (
+              
               <FormField
-                key={size}
                 control={form.control}
-                name="sizes"
-                render={({ field }) => {
-                  const checked = field.value?.includes(size);
-                  return (
-                    <FormItem className="flex items-center space-x-2">
-                      <FormControl>
-                        <button
-                          type="button"
-                          className={`px-4 py-2 rounded border text-sm font-medium transition-colors duration-150 focus:outline-none
-                            ${checked ? 'bg-primary text-white border-primary' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
-                          onClick={() => {
-                            const currentSizes = Array.isArray(field.value) ? field.value : [];
-                            const newSizes = checked
-                              ? currentSizes.filter((s) => s !== size)
-                              : [...currentSizes, size];
-                            field.onChange(newSizes);
-                          }}
-                        >
-                          {size}
-                        </button>
-                      </FormControl>
-                    </FormItem>
-                  );
-                }}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Description</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Hoodie streetwear premium avec un design urbain minimaliste."
+                        rows={3}
+                        className="text-sm border-gray-300 focus:border-red-500 focus:ring-red-500"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
               />
-            ))}
-          </div>
-          <FormMessage />
-        </div>
-        
-        {/* Product options */}
-        <div className="bg-gray-50/50 p-4 rounded-lg space-y-4">
-          <h3 className="text-lg font-semibold mb-2">Options du produit</h3>
-          <div className="flex space-x-4">
-            <FormField
-              control={form.control}
-              name="inStock"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
+            </CardContent>
+          </Card>
+          
+          {/* Image Upload Card */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="bg-black text-white px-4 py-3">
+              <CardTitle className="flex items-center space-x-2 text-sm font-medium">
+                <Image className="h-4 w-4" />
+                <span>Image du produit</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 space-y-3">
+              <div className="space-y-2">
+                <FormLabel className="text-sm font-medium text-gray-700">Télécharger une image</FormLabel>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="cursor-pointer h-9 text-sm border-gray-300 focus:border-red-500 focus:ring-red-500"
+                />
+                <FormDescription className="text-xs text-gray-500">
+                  Formats acceptés: JPG, PNG, GIF (max 5MB)
+                </FormDescription>
+                {imagePreview && (
+                  <div className="mt-3 flex items-start gap-3">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-20 h-20 object-cover rounded-lg border border-gray-200"
                     />
-                  </FormControl>
-                  <FormLabel className="text-sm font-normal cursor-pointer">
-                    En stock
-                  </FormLabel>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="featured"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormLabel className="text-sm font-normal cursor-pointer">
-                    Produit en vedette
-                  </FormLabel>
-                </FormItem>
-              )}
-            />
+                    <div className="flex-1">
+                      <p className="text-xs text-gray-600 mb-2">Aperçu de l'image</p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-7 px-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
+                        onClick={() => {
+                          setImagePreview(null);
+                          setSelectedFile(null);
+                          form.setValue("image", "");
+                        }}
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        Supprimer
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Pricing and Category Card */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="bg-black text-white px-4 py-3">
+              <CardTitle className="flex items-center space-x-2 text-sm font-medium">
+                <DollarSign className="h-4 w-4" />
+                <span>Prix et catégorie</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">Prix (MAD)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="1" 
+                          min="1" 
+                          placeholder="199" 
+                          className="h-9 text-sm border-gray-300 focus:border-red-500 focus:ring-red-500" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="oldPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">Ancien prix (optionnel)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="1" 
+                          min="1" 
+                          placeholder="249" 
+                          className="h-9 text-sm border-gray-300 focus:border-red-500 focus:ring-red-500" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">Catégorie</FormLabel>
+                      {categories.length === 0 ? (
+                        <div className="text-xs text-gray-400">Aucune catégorie trouvée. Ajoutez-en une d'abord.</div>
+                      ) : (
+                        <Select
+                          onValueChange={(value) => {
+                            form.setValue("category", value as "hoodies" | "tshirts");
+                            field.onChange(value as "hoodies" | "tshirts");
+                            // Find matching category ID
+                            const selectedCategory = categories.find(
+                              c => c.slug === value || c.name.toLowerCase().replace(/\s|-/g, "") === value
+                            );
+                            if (selectedCategory) {
+                              form.setValue("categoryId", selectedCategory.id.toString());
+                            }
+                          }}
+                          defaultValue={field.value}
+                          disabled={categories.length === 0}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="h-9 text-sm border-gray-300 focus:border-red-500 focus:ring-red-500">
+                              <SelectValue placeholder={categories.length === 0 ? "Chargement..." : "Sélectionner une catégorie"} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="hoodies">Hoodies</SelectItem>
+                            <SelectItem value="tshirts">T-shirts</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
+                />
           </div>
-        </div>
-        
-        {/* Form actions */}
-        <div className="flex justify-end gap-3 sticky bottom-0 bg-white py-4 border-t">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={productMutation.isPending}
-          >
-            Annuler
-          </Button>
-          <Button
-            type="submit"
-            disabled={productMutation.isPending}
-          >
-            {productMutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {product ? "Mise à jour..." : "Création..."}
-              </>
-            ) : (
-              product ? "Mettre à jour" : "Créer"
-            )}
-          </Button>
-        </div>
-      </form>
-    </Form>
+          </CardContent>
+        </Card>
+          
+          {/* Size Selection Card */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="bg-black text-white px-4 py-3">
+              <CardTitle className="flex items-center space-x-2 text-sm font-medium">
+                <Tag className="h-4 w-4" />
+                <span>Tailles disponibles</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 space-y-3">
+              <div className="flex flex-wrap gap-2">
+                {availableSizes.map((size) => (
+                  <FormField
+                    key={size}
+                    control={form.control}
+                    name="sizes"
+                    render={({ field }) => {
+                      const checked = field.value?.includes(size);
+                      return (
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <button
+                              type="button"
+                              className={`px-3 py-2 rounded-md border text-xs font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500
+                                ${checked 
+                                  ? 'bg-red-600 text-white border-red-600 hover:bg-red-700' 
+                                  : 'bg-white text-gray-700 border-gray-300 hover:border-red-500 hover:text-red-600'
+                                }`}
+                              onClick={() => {
+                                const currentSizes = Array.isArray(field.value) ? field.value : [];
+                                const newSizes = checked
+                                  ? currentSizes.filter((s) => s !== size)
+                                  : [...currentSizes, size];
+                                field.onChange(newSizes);
+                              }}
+                            >
+                              {size}
+                            </button>
+                          </FormControl>
+                        </FormItem>
+                      );
+                    }}
+                  />
+                ))}
+              </div>
+              <FormMessage className="text-xs" />
+            </CardContent>
+          </Card>
+          
+          {/* Product Options Card */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="bg-black text-white px-4 py-3">
+              <CardTitle className="flex items-center space-x-2 text-sm font-medium">
+                <Settings className="h-4 w-4" />
+                <span>Options du produit</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 space-y-3">
+              <div className="flex space-x-6">
+                <FormField
+                  control={form.control}
+                  name="inStock"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          className="border-gray-300 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+                        />
+                      </FormControl>
+                      <FormLabel className="text-sm font-medium text-gray-700 cursor-pointer">
+                        En stock
+                      </FormLabel>
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="featured"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          className="border-gray-300 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+                        />
+                      </FormControl>
+                      <FormLabel className="text-sm font-medium text-gray-700 cursor-pointer">
+                        Produit en vedette
+                      </FormLabel>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Form Actions Card */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  disabled={productMutation.isPending}
+                  className="h-9 px-4 text-sm border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600 hover:bg-red-50"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={productMutation.isPending}
+                  className="h-9 px-4 text-sm bg-red-600 hover:bg-red-700 text-white border-0"
+                >
+                  {productMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {product ? "Mise à jour..." : "Création..."}
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      {product ? "Mettre à jour" : "Créer"}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </form>
+      </Form>
+    </div>
   );
 }

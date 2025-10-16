@@ -21,9 +21,9 @@ export default function CategoryHighlight() {
           <p className="text-neutral-700 text-center mb-10 text-sm">
             Explorez notre collection de vêtements streetwear de qualité supérieure
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Skeleton className="h-[300px] w-full" />
-            <Skeleton className="h-[300px] w-full" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+            <Skeleton className="aspect-square w-full" />
+            <Skeleton className="aspect-square w-full" />
           </div>
         </div>
       </section>
@@ -41,7 +41,7 @@ export default function CategoryHighlight() {
           <p className="text-neutral-700 text-center mb-10 text-sm">
             Explorez notre collection de vêtements streetwear de qualité supérieure
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
             <CategoryCard
               title="Hoodies"
               description="À partir de 199 MAD"
@@ -69,7 +69,7 @@ export default function CategoryHighlight() {
         <p className="text-neutral-700 text-center mb-10 text-sm">
           Explorez notre collection de vêtements streetwear de qualité supérieure
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
           {categories.map((category: any) => {
             console.log('Category object:', category);
             return (

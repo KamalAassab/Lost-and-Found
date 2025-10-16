@@ -41,7 +41,6 @@ export default function ProductDetailPage() {
   const { user } = useAuth();
   const [showAuthPopup, setShowAuthPopup] = useState(false);
 
-  // Check if this is static deployment
 
   // Fetch product details
   const { data: apiProduct, isLoading: isLoadingProduct } = useQuery<Product>({
@@ -93,7 +92,7 @@ export default function ProductDetailPage() {
       size: selectedSize,
       price: Number(product.price),
       name: product.name,
-      imageUrl: `/uploads/${product.image}`,
+      imageUrl: product.imageUrl,
       category: categoryValue
     });
   };
@@ -134,7 +133,7 @@ export default function ProductDetailPage() {
     }
   };
 
-  if (!isStaticDeployment && isLoadingProduct) {
+  if (isLoadingProduct) {
     return (
       <MainLayout>
         <div className="container mx-auto py-12">
@@ -230,7 +229,7 @@ export default function ProductDetailPage() {
               </div>
             )}
             <img
-              src={`/uploads/${product.image}`}
+              src={product.imageUrl}
               alt={product.name}
               className="w-full h-auto object-cover"
             />

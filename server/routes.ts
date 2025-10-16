@@ -302,7 +302,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         search as string | undefined,
         featured === "true"
       );
-      res.json(products);
+      
+      // Transform products to include imageUrl
+      const transformedProducts = products.map(product => ({
+        ...product,
+        imageUrl: `/${product.image}`,
+        sizes: typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes
+      }));
+      
+      res.json(transformedProducts);
     } catch (error) {
       console.error("Error fetching products:", error);
       res.status(500).json({ message: "Erreur lors de la récupération des produits" });
@@ -315,7 +323,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!product) {
         return res.status(404).json({ message: "Produit non trouvé" });
       }
-      res.json(product);
+      
+      // Transform product to include imageUrl
+      const transformedProduct = {
+        ...product,
+        imageUrl: `/${product.image}`,
+        sizes: typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes
+      };
+      
+      res.json(transformedProduct);
     } catch (error) {
       console.error("Error fetching product:", error);
       res.status(500).json({ message: "Erreur lors de la récupération du produit" });
@@ -517,8 +533,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get(`${apiPrefix}/orders`, requireAdmin, async (req, res) => {
     try {
-      const orders = await storageService.getAllOrders();
-      res.json(orders);
+      const orders = await db.query.orders.findMany({
+        with: {
+          items: {
+            with: {
+              product: true
+            }
+          }
+        },
+        orderBy: desc(schema.orders.createdAt)
+      });
+      
+      // Transform orders to include imageUrl for products
+      const transformedOrders = orders.map(order => ({
+        ...order,
+        items: order.items.map(item => ({
+          ...item,
+          product: item.product ? {
+            ...item.product,
+            imageUrl: `/${item.product.image}`,
+            sizes: typeof item.product.sizes === 'string' ? JSON.parse(item.product.sizes) : item.product.sizes
+          } : null
+        }))
+      }));
+      
+      res.json(transformedOrders);
     } catch (error) {
       console.error("Error fetching orders:", error);
       res.status(500).json({ message: "Erreur lors de la récupération des commandes" });
@@ -528,11 +567,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get(`${apiPrefix}/orders/:id`, requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const order = await storageService.getOrderById(id);
+      const order = await db.query.orders.findFirst({
+        where: eq(schema.orders.id, id),
+        with: {
+          items: {
+            with: {
+              product: true
+            }
+          }
+        }
+      });
+      
       if (!order) {
         return res.status(404).json({ message: "Commande non trouvée" });
       }
-      res.json(order);
+      
+      // Transform order to include imageUrl for products
+      const transformedOrder = {
+        ...order,
+        items: order.items.map(item => ({
+          ...item,
+          product: item.product ? {
+            ...item.product,
+            imageUrl: `/${item.product.image}`,
+            sizes: typeof item.product.sizes === 'string' ? JSON.parse(item.product.sizes) : item.product.sizes
+          } : null
+        }))
+      };
+      
+      res.json(transformedOrder);
     } catch (error) {
       console.error("Error fetching order:", error);
       res.status(500).json({ message: "Erreur lors de la récupération de la commande" });
@@ -618,7 +681,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       where: eq(schema.wishlists.userId, userId),
       with: { product: true }
     });
-    res.json(wishlist);
+    
+    // Transform wishlist to include imageUrl for products
+    const transformedWishlist = wishlist.map(item => ({
+      ...item,
+      product: item.product ? {
+        ...item.product,
+        imageUrl: `/${item.product.image}`,
+        sizes: typeof item.product.sizes === 'string' ? JSON.parse(item.product.sizes) : item.product.sizes
+      } : null
+    }));
+    
+    res.json(transformedWishlist);
   });
 
   // Add to wishlist
@@ -729,13 +803,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       },
       orderBy: desc(schema.orders.createdAt)
     });
-    res.json(orders);
+    
+    // Transform orders to include imageUrl for products
+    const transformedOrders = orders.map(order => ({
+      ...order,
+      items: order.items.map(item => ({
+        ...item,
+        product: item.product ? {
+          ...item.product,
+          imageUrl: `/${item.product.image}`,
+          sizes: typeof item.product.sizes === 'string' ? JSON.parse(item.product.sizes) : item.product.sizes
+        } : null
+      }))
+    }));
+    
+    res.json(transformedOrders);
   });
 
   // General authentication check for any logged-in user
-  app.get('/api/check', (req, res) => {
+  app.get('/api/check', async (req, res) => {
     if ((req.session as CustomSession)?.user) {
-      return res.json({ authenticated: true, user: (req.session as CustomSession).user });
+      try {
+        // Get complete user information from database
+        const userId = (req.session as CustomSession).user?.id;
+        if (!userId) {
+          return res.json({ authenticated: false });
+        }
+        
+        const fullUser = await db.query.users.findFirst({
+          where: eq(schema.users.id, userId),
+          columns: {
+            id: true,
+            username: true,
+            email: true,
+            phone: true,
+            address: true,
+            fullname: true,
+            city: true,
+            postalCode: true,
+            isAdmin: true,
+            createdAt: true
+            // password is excluded for security
+          }
+        });
+        
+        if (fullUser) {
+          return res.json({ authenticated: true, user: fullUser });
+        }
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+        // Fallback to session data if database query fails
+        return res.json({ authenticated: true, user: (req.session as CustomSession).user });
+      }
     }
     res.json({ authenticated: false });
   });
@@ -785,13 +904,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get(`${apiPrefix}/admin/users`, requireAdmin, async (req, res) => {
     try {
       const users = await storageService.getAllUsers();
-      // Do NOT send password hashes to the frontend
-      const usersWithoutPasswords = users.map(user => {
-        // Destructure to omit password
-        const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword;
-      });
-      res.json(usersWithoutPasswords);
+      // Password is already excluded in storageService.getAllUsers()
+      res.json(users);
     } catch (error) {
       console.error("Error fetching users:", error);
       // Log the specific error details
@@ -826,6 +940,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
 
   const httpServer = createServer(app);
   return httpServer;

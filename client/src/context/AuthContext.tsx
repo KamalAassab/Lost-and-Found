@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { ProfessionalLoader } from "@/components/ui/professional-loader";
 import { queryClient } from "@/lib/queryClient";
 
 interface User {
@@ -52,14 +53,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
       } catch (error) {
         console.error("Auth check error:", error);
-        // For static deployment (GitHub Pages), just set user to null
+        // Set user to null on error
         setUser(null);
       } finally {
         setIsLoading(false);
       }
     };
 
-    // Skip auth check for static deployment
+    // Check authentication
     checkAuth();
   }, []);
 
@@ -71,12 +72,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       toast({
         title: "Connexion réussie",
         description: `Bienvenue, ${userData.username}!`,
+        variant: "success",
       });
       return true;
     } catch (error) {
       console.error("Login error:", error);
       toast({
-        title: "Erreur",
+        title: "Erreur de connexion",
         description: "Identifiants invalides",
         variant: "destructive",
       });

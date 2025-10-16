@@ -29,8 +29,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { formatPrice } from "@/lib/utils";
-import { PlusCircle, Search, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { PlusCircle, Search, Edit, Trash2, ChevronLeft, ChevronRight, Package, Filter, Grid, List, Eye, MoreHorizontal, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import ProductForm from "@/components/admin/ProductForm";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function AdminProductsPage() {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,6 +42,8 @@ export default function AdminProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortField, setSortField] = useState<string>("id");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const itemsPerPage = 10;
   const formDialogRef = useRef<HTMLDivElement>(null);
   
@@ -85,13 +89,34 @@ export default function AdminProductsPage() {
   });
 
   // Filter and paginate products
-  const filteredProducts = allProducts
-    ? allProducts.filter((product: any) => {
-        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                             product.description.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = categoryFilter === "all" || product.category === categoryFilter;
-        return matchesSearch && matchesCategory;
-      })
+  const productsList = (allProducts as any[]) || [];
+  const categoriesList = (categories as any[]) || [];
+  
+  const filteredProducts = productsList
+    ? productsList
+        .filter((product: any) => {
+          const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                               product.description.toLowerCase().includes(searchTerm.toLowerCase());
+          const matchesCategory = categoryFilter === "all" || product.category === categoryFilter;
+          return matchesSearch && matchesCategory;
+        })
+        .sort((a: any, b: any) => {
+          let aValue = a[sortField];
+          let bValue = b[sortField];
+          
+          // Handle special cases
+          if (sortField === "price" || sortField === "oldPrice") {
+            aValue = parseFloat(aValue) || 0;
+            bValue = parseFloat(bValue) || 0;
+          } else if (sortField === "name") {
+            aValue = aValue?.toLowerCase() || "";
+            bValue = bValue?.toLowerCase() || "";
+          }
+          
+          if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+          if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+          return 0;
+        })
     : [];
     
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
@@ -129,48 +154,95 @@ export default function AdminProductsPage() {
     setCurrentPage(page);
   };
 
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const getSortIcon = (field: string) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="h-4 w-4 text-gray-400" />;
+    }
+    return sortDirection === "asc" ? 
+      <ArrowUp className="h-4 w-4 text-black" /> : 
+      <ArrowDown className="h-4 w-4 text-black" />;
+  };
+
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Gestion des Produits</h1>
-          <Button onClick={openNewProductModal} className="bg-primary hover:bg-primary/90">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Nouveau Produit
-          </Button>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+        {/* Professional Header */}
+        <div className="bg-black text-white p-8 rounded-2xl mb-8 shadow-2xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-white/20 rounded-xl shadow-lg">
+                <Package className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold mb-2">Gestion des Produits</h1>
+                <p className="text-gray-300 text-sm">Gérez votre catalogue de produits</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Badge variant="secondary" className="bg-white/20 text-white border-0 shadow-lg">
+                {productsList.length} Produits
+              </Badge>
+              <Button 
+                onClick={openNewProductModal} 
+                className="bg-white text-black hover:bg-gray-100 hover:text-black shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              >
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Nouveau Produit
+              </Button>
+            </div>
+          </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Rechercher un produit..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1); // Reset to first page on search
-              }}
-              className="pl-10"
-            />
-          </div>
-          <Select
-            value={categoryFilter}
-            onValueChange={(value) => {
-              setCategoryFilter(value);
-              setCurrentPage(1); // Reset to first page on filter change
-            }}
-          >
-            <SelectTrigger className="w-full md:w-[180px]">
-              <SelectValue placeholder="Catégorie" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toutes</SelectItem>
-              <SelectItem value="hoodies">Hoodies</SelectItem>
-              <SelectItem value="tshirts">T-shirts</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Enhanced Filters */}
+        <Card className="mb-8 shadow-xl border-0 bg-gradient-to-br from-white to-gray-50">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Filter className="h-5 w-5 text-blue-600" />
+              <span>Filtres et Recherche</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Input
+                  placeholder="Rechercher un produit..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="pl-12 h-10 text-sm border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
+                />
+              </div>
+              <Select
+                value={categoryFilter}
+                onValueChange={(value) => {
+                  setCategoryFilter(value);
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="w-full md:w-[200px] h-10 text-sm border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+                  <SelectValue placeholder="Catégorie" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes les catégories</SelectItem>
+                  <SelectItem value="hoodies">Hoodies</SelectItem>
+                  <SelectItem value="tshirts">T-shirts</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Products table */}
         <div className="bg-white rounded-md shadow-sm">
@@ -195,12 +267,52 @@ export default function AdminProductsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-12">ID</TableHead>
+                      <TableHead 
+                        className="w-12 cursor-pointer hover:bg-gray-100 transition-colors duration-200"
+                        onClick={() => handleSort("id")}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>ID</span>
+                          {getSortIcon("id")}
+                        </div>
+                      </TableHead>
                       <TableHead className="w-20">Image</TableHead>
-                      <TableHead>Nom</TableHead>
-                      <TableHead>Catégorie</TableHead>
-                      <TableHead>Prix</TableHead>
-                      <TableHead>Stock</TableHead>
+                      <TableHead 
+                        className="cursor-pointer hover:bg-gray-100 transition-colors duration-200"
+                        onClick={() => handleSort("name")}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Nom</span>
+                          {getSortIcon("name")}
+                        </div>
+                      </TableHead>
+                      <TableHead 
+                        className="cursor-pointer hover:bg-gray-100 transition-colors duration-200"
+                        onClick={() => handleSort("category")}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Catégorie</span>
+                          {getSortIcon("category")}
+                        </div>
+                      </TableHead>
+                      <TableHead 
+                        className="cursor-pointer hover:bg-gray-100 transition-colors duration-200"
+                        onClick={() => handleSort("price")}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Prix</span>
+                          {getSortIcon("price")}
+                        </div>
+                      </TableHead>
+                      <TableHead 
+                        className="cursor-pointer hover:bg-gray-100 transition-colors duration-200"
+                        onClick={() => handleSort("inStock")}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Stock</span>
+                          {getSortIcon("inStock")}
+                        </div>
+                      </TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -210,7 +322,7 @@ export default function AdminProductsPage() {
                         <TableCell className="font-medium">{product.id}</TableCell>
                         <TableCell>
                           <img 
-                            src={`/uploads/${product.image}`} 
+                            src={product.imageUrl} 
                             alt={product.name} 
                             className="w-12 h-12 object-cover rounded"
                           />
@@ -338,7 +450,7 @@ export default function AdminProductsPage() {
           </DialogHeader>
           <ProductForm
             product={editingProduct}
-            categories={categories || []}
+            categories={categoriesList}
             onClose={() => setIsOpen(false)} 
           />
         </DialogContent>

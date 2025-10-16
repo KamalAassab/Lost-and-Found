@@ -34,7 +34,7 @@ import { Separator } from "@/components/ui/separator";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, ChevronRight, Eye, RefreshCw, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, RefreshCw, Trash2, ChevronUp, ChevronDown, User, Package, CreditCard, MapPin, Calendar, Clock, CheckCircle, Truck, XCircle, X } from "lucide-react";
 
 interface OrderTableProps {
   orders: any[];
@@ -166,21 +166,21 @@ export default function OrderTable({ orders }: OrderTableProps) {
     setCurrentPage(page);
   };
 
-  // Get badge color based on status
+  // Get badge color based on status - matching Dashboard colors
   const getStatusBadge = (status: string) => {
     switch(status) {
       case 'pending':
-        return <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-100 border-amber-200">En attente</Badge>;
+        return <Badge variant="secondary" className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 font-bold text-xs px-3 py-1 rounded-full">En attente</Badge>;
       case 'processing':
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200">En traitement</Badge>;
+        return <Badge variant="secondary" className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 font-bold text-xs px-3 py-1 rounded-full">En traitement</Badge>;
       case 'shipped':
-        return <Badge variant="outline" className="bg-indigo-100 text-indigo-800 hover:bg-indigo-100 border-indigo-200">Expédiée</Badge>;
+        return <Badge variant="secondary" className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 font-bold text-xs px-3 py-1 rounded-full">Expédiée</Badge>;
       case 'delivered':
-        return <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100 border-green-200">Livrée</Badge>;
+        return <Badge variant="secondary" className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 font-bold text-xs px-3 py-1 rounded-full">Livrée</Badge>;
       case 'cancelled':
-        return <Badge variant="outline" className="bg-red-100 text-red-800 hover:bg-red-100 border-red-200">Annulée</Badge>;
+        return <Badge variant="secondary" className="bg-gradient-to-r from-red-500 to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 font-bold text-xs px-3 py-1 rounded-full">Annulée</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="secondary" className="bg-gradient-to-r from-gray-500 to-gray-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 font-bold text-xs px-3 py-1 rounded-full">{status}</Badge>;
     }
   };
 
@@ -299,90 +299,112 @@ export default function OrderTable({ orders }: OrderTableProps) {
 
       {/* Order Details Dialog */}
       <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
-        <DialogContent className="sm:max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>
-              Détails de la commande{' '}
-              {(() => {
+        <DialogContent className="sm:max-w-4xl max-h-[85vh] overflow-hidden">
+          <DialogHeader className="bg-black text-white px-4 py-3 -m-6 mb-4">
+            <DialogTitle className="text-lg font-bold flex items-center space-x-2">
+              <Package className="h-5 w-5" />
+              <span>Commande #{(() => {
                 if (!selectedOrder) return '';
-                // Sort orders by creation date (oldest first)
                 const sorted = [...orders].sort(
                   (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
                 );
-                // Find the index of the selected order
                 const idx = sorted.findIndex(o => o.id === selectedOrder.id);
                 return idx >= 0 ? idx + 1 : selectedOrder.id;
-              })()}
+              })()}</span>
+              <span className="text-sm text-gray-300 ml-2">
+                {selectedOrder && formatDate(selectedOrder.createdAt)}
+              </span>
             </DialogTitle>
-            <DialogDescription>
-              Détails et actions pour cette commande.
-            </DialogDescription>
           </DialogHeader>
           
           {selectedOrder && (
-            <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
-              {/* Order Status */}
-              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Commande passée le {formatDate(selectedOrder.createdAt)}
-                  </p>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Statut:</span>
-                  <Select
-                    value={selectedOrder.status}
-                    onValueChange={(value) => handleStatusChange(selectedOrder.id, value)}
-                    disabled={statusMutation.isPending}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Changer le statut" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">En attente</SelectItem>
-                      <SelectItem value="processing">En traitement</SelectItem>
-                      <SelectItem value="shipped">Expédiée</SelectItem>
-                      <SelectItem value="delivered">Livrée</SelectItem>
-                      <SelectItem value="cancelled">Annulée</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  {statusMutation.isPending && (
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                  )}
-                </div>
-              </div>
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+              {/* Order Status Card */}
+              <Card className="border border-gray-300 shadow-sm">
+                <CardHeader className="bg-black text-white px-3 py-2">
+                  <CardTitle className="flex items-center justify-between text-sm">
+                    <div className="flex items-center space-x-2">
+                      <Package className="h-4 w-4" />
+                      <span>Statut</span>
+                    </div>
+                    {getStatusBadge(selectedOrder.status)}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm text-gray-600">{formatDate(selectedOrder.createdAt)}</span>
+                    </div>
+                    <Select
+                      value={selectedOrder.status}
+                      onValueChange={(value) => handleStatusChange(selectedOrder.id, value)}
+                      disabled={statusMutation.isPending}
+                    >
+                      <SelectTrigger className="w-[160px] h-8 text-xs border-gray-300 focus:border-red-500 focus:ring-red-500">
+                        <SelectValue placeholder="Changer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">En attente</SelectItem>
+                        <SelectItem value="processing">En traitement</SelectItem>
+                        <SelectItem value="shipped">Expédiée</SelectItem>
+                        <SelectItem value="delivered">Livrée</SelectItem>
+                        <SelectItem value="cancelled">Annulée</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {statusMutation.isPending && (
+                      <RefreshCw className="h-4 w-4 animate-spin text-red-500" />
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
               
               {/* Order details grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Customer information */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Informations client</CardTitle>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Customer Information Card */}
+                <Card className="border border-gray-300 shadow-sm">
+                  <CardHeader className="bg-black text-white px-3 py-2">
+                    <CardTitle className="flex items-center space-x-2 text-sm">
+                      <User className="h-4 w-4" />
+                      <span>Client</span>
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <p className="font-medium">{selectedOrder.customerName}</p>
-                      <p className="text-sm">{selectedOrder.customerEmail}</p>
-                      <p className="text-sm">{selectedOrder.customerPhone}</p>
+                  <CardContent className="p-3 space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <User className="h-4 w-4 text-gray-500" />
+                      <span className="font-semibold text-sm">{selectedOrder.customerName}</span>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium mb-1">Adresse de livraison</p>
-                      <p className="text-sm">{selectedOrder.shippingAddress}</p>
-                      <p className="text-sm">{selectedOrder.city}, {selectedOrder.postalCode}</p>
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <span className="text-xs text-gray-600">{selectedOrder.customerEmail}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Clock className="h-4 w-4 text-gray-500" />
+                      <span className="text-xs text-gray-600">{selectedOrder.customerPhone}</span>
+                    </div>
+                    <Separator className="my-2" />
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <MapPin className="h-4 w-4 text-gray-500" />
+                        <span className="text-xs font-medium text-gray-700">Adresse</span>
+                      </div>
+                      <p className="text-xs text-gray-600 ml-6">{selectedOrder.shippingAddress}</p>
+                      <p className="text-xs text-gray-600 ml-6">{selectedOrder.city}, {selectedOrder.postalCode}</p>
                     </div>
                   </CardContent>
                 </Card>
-                {/* Order summary and payment */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Résumé de la commande</CardTitle>
+                {/* Order Summary Card */}
+                <Card className="border border-gray-300 shadow-sm">
+                  <CardHeader className="bg-black text-white px-3 py-2">
+                    <CardTitle className="flex items-center space-x-2 text-sm">
+                      <CreditCard className="h-4 w-4" />
+                      <span>Paiement</span>
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-sm">Produits:</span>
-                      <span className="text-sm font-medium">
+                  <CardContent className="p-3 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-gray-600">Produits:</span>
+                      <span className="font-semibold text-sm">
                         {formatPrice(
                           (order.items?.reduce(
                             (sum: number, item: any) => sum + (item.price * item.quantity),
@@ -391,32 +413,36 @@ export default function OrderTable({ orders }: OrderTableProps) {
                         )}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Livraison:</span>
-                      <span className="text-sm font-medium">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-gray-600">Livraison:</span>
+                      <span className="font-semibold text-sm">
                         {order.free_shipping ? (
-                          <span className="text-green-600">Gratuite</span>
+                          <span className="text-red-600 flex items-center">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Gratuite
+                          </span>
                         ) : (
                           '50 MAD'
                         )}
                       </span>
                     </div>
                     {order.promoApplied && (
-                      <div className="flex justify-between">
-                        <span className="text-sm">Promotion appliquée:</span>
-                        <span className="text-sm font-medium text-green-600">Oui</span>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-gray-600">Promotion:</span>
+                        <span className="text-xs text-red-600 flex items-center">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Oui
+                        </span>
                       </div>
                     )}
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="font-medium">Total:</span>
-                      <span className="font-bold">{formatPrice(order.total)}</span>
+                    <Separator className="my-2" />
+                    <div className="flex justify-between items-center bg-black text-white p-2 rounded">
+                      <span className="font-bold text-sm">Total:</span>
+                      <span className="font-bold text-lg">{formatPrice(order.total)}</span>
                     </div>
-                    {/* Payment method section */}
-                    <Separator />
-                    <div>
-                      <span className="font-medium">Méthode de paiement:</span>
-                      <span className="ml-2">
+                    <div className="flex items-center space-x-2">
+                      <CreditCard className="h-4 w-4 text-gray-500" />
+                      <span className="text-xs text-gray-600">
                         {selectedOrder.paymentMethod === 'credit_card' ? 'Carte bancaire' : 'À la livraison'}
                       </span>
                     </div>
@@ -424,57 +450,97 @@ export default function OrderTable({ orders }: OrderTableProps) {
                 </Card>
               </div>
               
-              {/* Order items */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Articles commandés</CardTitle>
+              {/* Order Items Card */}
+              <Card className="border border-gray-300 shadow-sm">
+                <CardHeader className="bg-black text-white px-3 py-2">
+                  <CardTitle className="flex items-center space-x-2 text-sm">
+                    <Package className="h-4 w-4" />
+                    <span>Articles</span>
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
+                <CardContent className="p-3">
+                  <div className="space-y-2">
                     {(order?.items?.length === 0 || !order?.items) && (
-                      <div className="text-center py-4 text-muted-foreground">Aucun article dans cette commande</div>
+                      <div className="text-center py-4 text-gray-500">
+                        <Package className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                        <p className="text-xs">Aucun article</p>
+                      </div>
                     )}
-                    {order?.items?.map((item: any) => (
-                      <div key={`${item.productId}-${item.size}`} className="flex items-center gap-4">
-                                <img 
-                          src={item.product?.image ? `/uploads/${item.product.image}` : undefined}
-                          alt={item.product?.name}
-                          className="w-16 h-16 object-cover rounded-md"
-                                />
+                    {order?.items?.map((item: any, index: number) => (
+                      <div key={`${item.productId}-${item.size}`} className="flex items-center gap-3 p-2 border border-gray-200 rounded hover:bg-gray-50">
+                        <div className="relative">
+                          <img 
+                            src={item.product?.imageUrl || undefined}
+                            alt={item.product?.name}
+                            className="w-10 h-10 object-cover rounded border border-gray-200"
+                          />
+                          <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                            {index + 1}
+                          </div>
+                        </div>
                         <div className="flex-grow">
-                          <p className="font-medium">{item.product?.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            Taille: {item.size} | Quantité: {item.quantity}
-                          </p>
+                          <p className="font-semibold text-sm text-gray-900">{item.product?.name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-gray-600 bg-gray-200 px-1 py-0.5 rounded">
+                              {item.size}
+                            </span>
+                            <span className="text-xs text-gray-600 bg-red-100 px-1 py-0.5 rounded">
+                              x{item.quantity}
+                            </span>
+                          </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium">{formatPrice(item.price * item.quantity)}</p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="font-bold text-sm text-gray-900">{formatPrice(item.price * item.quantity)}</p>
+                          <p className="text-xs text-gray-500">
                             {formatPrice(item.price)} × {item.quantity}
-                                  </p>
-                                </div>
-                              </div>
+                          </p>
+                        </div>
+                      </div>
                     ))}
-                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
           )}
-          {/* Add Delete Button Here */}
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setIsViewOpen(false)}>Fermer</Button>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                setOrderToDelete(selectedOrder);
-                setIsViewOpen(false);
-                setIsDeleteDialogOpen(true);
-              }}
-              disabled={deleteMutation.isPending}
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Supprimer la commande
-            </Button>
+          
+          {/* Action Buttons - Compact */}
+          <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-300 -m-6 px-4 py-3 bg-gray-50">
+            <div className="flex items-center space-x-2 text-xs text-gray-600">
+              <Clock className="h-3 w-3" />
+              <span>{selectedOrder && formatDate(selectedOrder.createdAt)}</span>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsViewOpen(false)}
+                className="h-8 px-3 text-xs border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600 hover:bg-red-50"
+              >
+                <X className="h-3 w-3 mr-1" />
+                Fermer
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  setOrderToDelete(selectedOrder);
+                  setIsViewOpen(false);
+                  setIsDeleteDialogOpen(true);
+                }}
+                disabled={deleteMutation.isPending}
+                className="h-8 px-3 text-xs bg-red-600 hover:bg-red-700 text-white border-0"
+              >
+                {deleteMutation.isPending ? (
+                  <>
+                    <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                    Suppression...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-3 w-3 mr-1" />
+                    Supprimer
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
