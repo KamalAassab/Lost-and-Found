@@ -1050,7 +1050,7 @@ export default function AccountDashboard() {
                                             ) : (
                                               <ImageIcon className="h-6 w-6 text-gray-400" />
                                             )}
-                                          </div>
+                                    </div>
                                   <div className="flex-1 min-w-0">
                                             <p className="font-medium truncate">{item.product?.name || 'Produit inconnu'}</p>
                                             <p className="text-sm text-gray-500">
@@ -1070,7 +1070,7 @@ export default function AccountDashboard() {
                                 </div>
                               ))}
                             </div>
-                  </div>
+                            </div>
                           )}
                               </CardContent>
                             </Card>
