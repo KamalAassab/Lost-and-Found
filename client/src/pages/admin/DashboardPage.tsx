@@ -72,7 +72,15 @@ const groupOrdersByStatus = (orders: any[]) => {
   }));
 };
 
-// Dashboard analytics - Black/White/Red color scheme
+// Dashboard analytics - Status-specific colors
+const STATUS_COLORS = {
+  'En attente': '#F59E0B',      // Amber for pending
+  'En traitement': '#3B82F6',  // Blue for processing  
+  'Expédiée': '#8B5CF6',       // Purple for shipped
+  'Livrée': '#10B981',         // Green for delivered
+  'Annulée': '#EF4444'         // Red for cancelled
+};
+
 const COLORS = ['#000000', '#666666', '#CCCCCC', '#FF0000', '#FF6666'];
 
 export default function DashboardPage() {
@@ -318,8 +326,8 @@ export default function DashboardPage() {
                         {statusDataFull.map((entry, index) => (
                           <Cell 
                             key={`cell-bar-h-${index}`} 
-                            fill={COLORS[index % COLORS.length]}
-                            stroke={COLORS[index % COLORS.length]}
+                            fill={STATUS_COLORS[entry.name as keyof typeof STATUS_COLORS] || '#000000'}
+                            stroke={STATUS_COLORS[entry.name as keyof typeof STATUS_COLORS] || '#000000'}
                             strokeWidth={1}
                           />
                         ))}
@@ -331,7 +339,7 @@ export default function DashboardPage() {
                       <div key={entry.name} className="flex items-center gap-2 bg-white/50 px-3 py-2 rounded-lg shadow-sm">
                         <span
                           style={{
-                            backgroundColor: COLORS[index % COLORS.length],
+                            backgroundColor: STATUS_COLORS[entry.name as keyof typeof STATUS_COLORS] || '#000000',
                             width: 12,
                             height: 12,
                             borderRadius: 6,
