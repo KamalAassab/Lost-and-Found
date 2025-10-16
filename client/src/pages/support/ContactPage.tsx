@@ -22,9 +22,9 @@ export default function ContactPage() {
     const message = formData.get("message") as string;
 
     try {
-      console.log("About to send POST to /api/messages");
+      // Debug: Sending message
       const response = await apiRequest("POST", "/api/messages", { name, email, subject, message });
-      console.log("POST request sent!", response);
+      // Debug: Message sent
       if (response && response.id) {
         toast({
           title: "Message envoyé",

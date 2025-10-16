@@ -52,8 +52,7 @@ export function ProductQuickView({ product, open, onClose }: ProductQuickViewPro
   const allSizes = ["XS", "S", "M", "L", "XL", "XXL"];
 
   // Debug log for raw and parsed sizes
-  console.log("[ProductQuickView] RAW product.sizes:", product.sizes);
-  console.log("[ProductQuickView] Parsed sizes for product:", product.name, sizes);
+  // Debug: Product sizes parsed
 
   const [selectedSize, setSelectedSize] = useState(allSizes[0]);
   const [quantity, setQuantity] = useState(1);

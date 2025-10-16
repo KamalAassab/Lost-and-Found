@@ -64,8 +64,8 @@ async function sendOrderConfirmationEmail(to: string, order: any) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "kamalaassab2002@gmail.com", // Replace with your Gmail address
-      pass: "osqonuttgeaykeci", // Your Gmail app password
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
   });
 
@@ -82,7 +82,7 @@ async function sendOrderConfirmationEmail(to: string, order: any) {
     : `<tr><td colspan="4" style="padding: 8px 0; text-align: center; color: #888;">Aucun produit</td></tr>`;
 
   const mailOptions = {
-    from: '"LOST & FOUND" <kamalaassab2002@gmail.com>',
+    from: `"LOST & FOUND" <${process.env.EMAIL_USER}>`,
     to,
     subject: "Merci pour votre commande chez LOST & FOUND !",
     text: `Merci pour votre commande !`,
@@ -360,7 +360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         featured: featured === 'true' || featured === true,
         sizes: typeof sizes === 'string' ? sizes : JSON.stringify(sizes),
       };
-      console.log('Received productData:', productData);
+      // Debug: Product data received
       // Validate and create product
       const data = schema.productsInsertSchema.parse(productData);
       const product = await storageService.createProduct(data);
@@ -606,7 +606,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const { status } = req.body;
-      console.log('Order status update request:', { id, status });
+      // Debug: Order status update request
       
       // Validate status
       if (!status || typeof status !== 'string') {
@@ -910,8 +910,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error fetching users:", error);
       // Log the specific error details
       if (error instanceof Error) {
-        console.error("Detailed user fetch error:", error.message);
-        if (error.stack) console.error(error.stack);
+        // Error details logged securely
       } else {
         console.error("Detailed user fetch error:", error);
       }

@@ -6,9 +6,10 @@ export default {
   dialect: "mysql",
   strict: true,
   dbCredentials: {
-    host: "localhost",
-    user: "root",
-    password: "test",
-    database: "ecommerce",
+    host: process.env.DB_HOST || "localhost",
+    port: parseInt(process.env.DB_PORT || "3306"),
+    user: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "test",
+    database: process.env.DB_NAME || "ecommerce",
   },
 } satisfies Config;

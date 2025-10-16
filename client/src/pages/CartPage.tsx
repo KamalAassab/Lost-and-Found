@@ -19,7 +19,7 @@ export default function CartPage() {
   const [showPrompt, setShowPrompt] = useState(false);
   const { user } = useAuth();
 
-  console.log("user in cart page:", user);
+  // Debug: User in cart page
 
   if (cartItems.length === 0) {
     return (
