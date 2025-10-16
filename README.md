@@ -14,7 +14,7 @@
 
 **A modern, premium e-commerce platform for streetwear fashion with professional admin dashboard and seamless user experience.**
 
-[🌐 Live Demo](https://lost-and-found-black-rho.vercel.app) • [📖 Documentation](#documentation) • [🚀 Quick Start](#quick-start) • [📧 Contact](#contact)
+[🌐 Live Demo](https://lost-and-found-black-rho.vercel.app) • [📖 Documentation](#documentation) • [🚀 Quick Start](#quick-start) • [🔒 Security](#security) • [📧 Contact](#contact)
 
 </div>
 
@@ -268,6 +268,31 @@ LOST & FOUND/
 └── 📦 Build Output
     └── dist/                         # Production build output
 ```
+
+---
+
+## 🔒 Security
+
+### **Security Features**
+- ✅ **Environment Variables**: All sensitive data secured with environment variables
+- ✅ **Security Headers**: XSS protection, content type sniffing prevention, frame options
+- ✅ **Database Security**: Consistent configuration with proper connection pooling
+- ✅ **Session Security**: HTTP-only cookies, secure session management
+- ✅ **Input Validation**: Comprehensive data validation and sanitization
+- ✅ **Error Handling**: Secure error logging without sensitive data exposure
+
+### **Security Documentation**
+- 📖 **[SECURITY.md](SECURITY.md)**: Comprehensive security guide
+- 🔧 **[.env.example](.env.example)**: Environment variables template
+- 🛡️ **Security Headers**: X-Content-Type-Options, X-Frame-Options, X-XSS-Protection
+- 🔐 **Authentication**: JWT-based authentication with secure session management
+
+### **Production Security Checklist**
+- [ ] Update all default passwords and secrets
+- [ ] Use strong, unique JWT_SECRET and SESSION_SECRET
+- [ ] Configure secure email credentials
+- [ ] Enable HTTPS in production
+- [ ] Regular security audits and dependency updates
 
 ---
 
